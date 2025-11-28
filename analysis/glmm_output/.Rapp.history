@@ -1,0 +1,4 @@
+load("/Users/exs165/Dropbox/average-effort/code/analysis/glmm_output/glm_model_comparison_main_v3.RData")
+load("/Users/exs165/Dropbox/average-effort/code/analysis/glmm_output/glm_model_comparison_main_reward_v3.RData")
+load("/Users/exs165/Dropbox/average-effort/code/analysis/glmm_output/glm_model_reward_v3.RData")
+load("/Users/exs165/Dropbox/average-effort/code/analysis/glmm_output/glm_model_avg_effort_mri.RData")
