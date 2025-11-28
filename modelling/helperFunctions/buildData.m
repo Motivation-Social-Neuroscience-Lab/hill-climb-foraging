@@ -51,7 +51,7 @@ if fit_flag == 0 % if simulating
     end
 
 elseif fit_flag == 1 % if fitting data
-    load([config.paths.dataDerived, 'behav_summary_', config.version]);
+    load([config.paths.data_behav, 'behav_summary_', config.version]);
     results(config.excluded_subjects) = [];
 
     for iS = 1:length(results)

@@ -32,7 +32,7 @@ function fval = compute_AET_objective(params_in, task, model, ...
     
     % Compute negative log likelihood
     try
-        [nll, ~] = simulate_AET_task_new(task, model, subject_data, params');
+        [nll, ~] = simulate_AET_model(task, model, subject_data, params');
         
         if isnan(nll) || isinf(nll)
             fval = 1e10;

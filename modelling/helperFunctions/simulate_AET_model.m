@@ -1,4 +1,4 @@
-function [negLL, results, response_out] = simulate_AET_task_new(task,model,agent,agentParams)
+function [negLL, results, response_out] = simulate_AET_model(task,model,agent,agentParams)
 
 % convert parameter array to table to allow indexing
 params = array2table(agentParams); params.Properties.VariableNames = model.paramNames;
@@ -31,13 +31,13 @@ if strcmp(model.learnFunction, 'expected')
     bR = task.reward;
 else
     tau_weight = task.acceptTime + task.decisionTime;
-    bE = 0;%task.effortLevels(2)/tau_weight; % 0.1667
+    bE = task.effortLevels(2)/tau_weight;
     bR = task.reward/tau_weight; % background reward rate
 
 end
 
 switch model.discountFunction
-    case {'weight', 'weight_no_bR'}
+    case {'weight'}
         weight = params.weight;
 end
 
@@ -47,11 +47,8 @@ bV = 0; % background value (reward discounted by effort)
 oppCost = 0; % opp cost, taking into account pursue time (task.acceptTime)
 effortPE = 0; % no PE on first trial 
 
-% set alpha 
 alpha = params.alpha;
 beta = params.beta;
-%bias = params.bias;
-bias = 0;
 kOffer = params.kOffer; 
 
 logLikelihood = 0; % for model fitting
@@ -67,35 +64,25 @@ while blockN <= task.nBlocks
     
     E = cueEffort(trialBlock);
 
-    switch model.numK
-        case 'one' % total reward over the trial - total effort exerted over the trial
-        switch model.discountFunction
-            case 'additive'
-                oppCost = bR*tau_weight - bE*tau_weight; % convert bR and bE into trial values rather than timestep
-                SV = R - (kOffer * E^2) - oppCost; % as background value increases, current offer is less valuable
+    switch model.discountFunction
+        case 'additive'
+            oppCost = bR*tau_weight - kOffer*(bE*tau_weight); % convert bR and bE into trial values rather than timestep
+            SV = R - (kOffer * E^2) - oppCost; % as background value increases, current offer is less valuable
 
-            case 'additive_no_k'
-                oppCost = - bE*tau_weight; % convert bR and bE into trial values rather than timestep
-                SV = R - (kOffer * E^2) - oppCost; % as background value increases, current offer is less valuable
+        case 'weight'
+            oppCost = bR*tau_weight - bE*tau_weight;
+            SV = (1-weight)*(R-kOffer*E^2) - weight*(oppCost);
 
-            case 'weight'
-                oppCost = bR*tau_weight - bE*tau_weight;
-                SV = (1-weight)*(R-kOffer*E^2) - weight*(oppCost);
+        case 'additive_original'
+            oppCost = - kOffer*(bE*tau_weight); % convert bR and bE into trial values rather than timestep
+            SV = R - (kOffer * E^2) - oppCost; % as background value increases, current offer is less valuable
 
-            case 'weight_no_bR'
-                oppCost = - bE*tau_weight;
-                SV = (1-weight)*(R-kOffer*E^2) - weight*(oppCost);
-
-            case 'additive_original'
-                oppCost = - kOffer*(bE*tau_weight); % convert bR and bE into trial values rather than timestep
-                SV = R - (kOffer * E^2) - oppCost; % as background value increases, current offer is less valuable
-
-        end
     end
+    
 
     % compute subjective value, SV
 
-    pAccept = softmaxAccept_new(beta, SV, 0, bias); % oppCost will be 0 if backgroundEffort already weighting value
+    pAccept = softmaxAccept(beta, SV, 0); % oppCost will be 0 if backgroundEffort already weighting value
 
     if isnan(response(trialBlock)) % if simulating data
         response(trialBlock) = (rand(1) < pAccept);     % make a choice of next action

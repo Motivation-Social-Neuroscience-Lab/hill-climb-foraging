@@ -30,8 +30,8 @@ switch study
         cfg.task.magnitudeToLevel = containers.Map({0.2, 0.4, 0.6}, {1, 2, 3});
 
         % File paths
-        cfg.paths.dataDerived = '../../data_derived/v1/';
-        cfg.paths.dataRaw = '../../data_raw/v1/';
+        cfg.paths.data_fit = '../data/fit/v1/';
+        cfg.paths.data_behav = '../data/behavioural/v1/';
 
     case 'v3'
         %% Version identifier
@@ -56,8 +56,9 @@ switch study
         cfg.task.magnitudeToLevel = containers.Map({0.2, 0.4, 0.6}, {1, 2, 3});
 
         % File paths
-        cfg.paths.dataDerived = '../../data_derived/v3/';
-        cfg.paths.dataRaw = '../../data_raw/v3/';
+        cfg.paths.data_fit = '../data/fit/v3/';
+        cfg.paths.data_behav = '../data/behavioural/v3/';
+
 
     case 'mri'
         %% Version identifier
@@ -82,8 +83,9 @@ switch study
         cfg.task.magnitudeToLevel = containers.Map({0.2, 0.4, 0.6}, {1, 2, 3});
 
         % File paths
-        cfg.paths.dataDerived = '../../data_derived/mri/';
-        cfg.paths.dataRaw = '../../data_raw/mri/';
+        cfg.paths.data_fit = '../data/fit/mri/';
+        cfg.paths.data_behav = '../data/behavioural/mri/';
+
 
     case 'online'
         %% Version identifier
@@ -108,8 +110,9 @@ switch study
         cfg.task.magnitudeToLevel = containers.Map({0.2, 0.4, 0.6}, {1, 2, 3});
 
         % File paths
-        cfg.paths.dataDerived = '../../data_derived/online/';
-        cfg.paths.dataRaw = '../../data_raw/online/';
+        cfg.paths.data_fit = '../data/fit/online/';
+        cfg.paths.data_behav = '../data/behavioural/online/';
+
 
 end
 

@@ -10,7 +10,7 @@
 %% Set up ------------------------------------------------------------------
 clearvars; close all
 
-addpath('../../figures/functions/')
+%addpath('../../figures/functions/')
 addpath('./helperFunctions/')
 
 run figure_properties_aet.m
@@ -34,7 +34,7 @@ fitted_models = cell(1,length(model_ids));
 model_ids = arrayfun(@(x) sprintf('M%d', x), model_ids, 'UniformOutput', false);
 
 for imodel = 1:length(model_ids)
-    load(sprintf('../../data_derived/%s/fitting_hierarchical/fitting_hierarchical_%s', study_version, model_ids{imodel}));
+    load([config.paths.data_fit, 'fitting_hierarchical_M' model_ids{imodel}]);
     fitted_models{imodel} = modout;
     
 end

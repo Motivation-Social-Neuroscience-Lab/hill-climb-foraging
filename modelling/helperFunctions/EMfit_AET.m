@@ -53,7 +53,7 @@ end
 
 % EM algorithm parameters
 convCrit = 0.001;
-maxiter = 25;
+maxiter = 800;
 options = optimoptions(@fminunc, 'Display', 'off', 'Algorithm', 'quasi-newton');
 
 % %% ==================== INITIALIZATION ====================
@@ -261,12 +261,12 @@ for iP = 1:npar
     histogram(modout.fitted_params_real(iP, :), 20, 'Normalization', 'pdf');
     hold on;
 
-    % mu = gauss2real(modout.gauss_mu(iP), lb, ub);
-    % sigma = sqrt(modout.gauss_sigma2(iP));
-    % % Fitted group distribution   %% ES - FIX: change gauss to real space
-    % x = linspace(lb(iP), ub(iP), 200);
-    % plot(x, normpdf(x, mu, sigma), ...
-    %     'r-', 'LineWidth', 2);
+    mu = gauss2real(modout.gauss_mu(iP), lb, ub);
+    sigma = sqrt(modout.gauss_sigma2(iP));
+    % Fitted group distribution   %% ES - FIX: change gauss to real space
+    x = linspace(lb(iP), ub(iP), 200);
+    plot(x, normpdf(x, mu, sigma), ...
+        'r-', 'LineWidth', 2);
 
     xlabel(model.paramNames{iP});
     title('Individual Distribution');

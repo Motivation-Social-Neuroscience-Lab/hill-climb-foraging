@@ -1,119 +1,114 @@
-%% fitting models to foraging data
-% Emma Scholey 9 Jun 2022
-% latest update 4 August 2023
+%% Hierarchical Bayesian Fitting for EPT Models
+% This script fits models using hierarchical EM algorithm instead of
+% individual fmincon optimization. This improves parameter recovery,
+% especially for bounded parameters like alpha.
+%
+% Meijia Li EPT
+% Date: 13/11/2025
+% updated 19/11/2025 for AET task (Emma Scholey)
 
 clear
 close all
 
 addpath('./helperFunctions')
 
-modelTable = readtable('./AETModelTable_final.xlsx');
-%modelTable = readtable('./AETModelTable_new.xlsx');
+%% ============================================================================
+%  STEP 1: USER OPTIONS 
+%% ============================================================================
 
-%% user options
+% Which models to fit
+modelNumbers = [1:6];
 
-% model options
-modelNum = [5];
+% Fitting options
+study_version = 'mri';  % 'v1', 'v3', or 'mri'
+fit_flag = 1; % are we fitting?
 
-% fitting options
-fitOptions.type = 'fit'; % not simulati- ng data here
-fitOptions.nSim = 4; % how many starts/iterations for fmincon search
-fitOptions.version = 'mri'; % what version of the data to model (v1, v3, mri)
+% Load model table
+modelTable = readtable('./AETModelTable.xlsx');
 
-%% set up model and task
+print_progress = true;
+print_visuals = false;
 
-% load task
-task = buildTask(fitOptions);
+%% ============================================================================
+%  LOOP THROUGH MODELS
+%% ============================================================================
 
-% load participant data
-allData = buildData(fitOptions);
-nSub = size(allData.data,2); 
+for iModel = 1:length(modelNumbers)
+    modelNum = modelNumbers(iModel);
 
-for m = modelNum %modelNum % for all models
-    % load model
-    model = table2struct(modelTable(modelTable.modelNumber == m,:));
+    %% ============================================================================
+    %  STEP 2: SETUP
+    %% ============================================================================
 
-    % load random set of start parameters for fmincon search
-    allParams = buildParams(model,fitOptions);
-    %allParams = buildParams_new(model,fitOptions);
+    fprintf('\n=== HIERARCHICAL BAYESIAN FITTING FOR AET ===\n');
+    fprintf('Model: %d\n', modelNum);
+    fprintf('Version: %s\n', study_version);
 
-    model.paramNames = allParams.names;
+    % Load task
+    config = config_study(study_version, fit_flag);
 
-    %% fitting for each person in group with different starting points
-    options = optimoptions('fmincon','Display','none'); % don't display
-    lb = allParams.lb;
-    ub = allParams.ub;
+    % Load participant data
+    behav_data = buildData(config, fit_flag, []);
 
-    % initialise containers
-    minNLL = zeros([nSub 1]);
-    minNLLFitParams = zeros([nSub allParams.nParams]);
-    BIC = zeros([nSub 1]);
-    AIC = zeros([nSub 1]);
+    % Load model specification
+    model = table2struct(modelTable(modelTable.modelNumber == modelNum,:));
 
-    paramArray = table2array(allParams.params);
+    % Get parameter names and bounds
+    [params] = buildParams(model);
+    model.paramNames = params.names;
 
-    for iS = 1:nSub
+    nSubj = length(behav_data);
+    nParams = length(model.paramNames);
 
-        iS
-        agent.data = allData.data{iS};
-        agent.blockOrder = allData.blockOrder(iS,:);
-        NLLEval = zeros([fitOptions.nSim, 1]);
-        FitParams = zeros([fitOptions.nSim, allParams.nParams]);
+    fprintf('Parameters: %s\n', strjoin(model.paramNames, ', '));
+    fprintf('Subjects: %d\n', nSubj);
 
-        %Run fmincon
-        parfor ii = 1:fitOptions.nSim
-            params0 =  paramArray(ii,:);
+    %% ============================================================================
+    %  STEP 4: RUN HIERARCHICAL FITTING
+    %% ============================================================================
 
-            f = @(x0)simulate_AET_task(task,model,agent,x0);
-            %f = @(x0)simulate_AET_task_new(task,model,agent,x0);
+    fprintf('\n=== RUNNING HIERARCHICAL EM ALGORITHM ===\n');
 
-            [FitParams(ii,:),NLLEval(ii)] = fmincon(f,params0,[],[],[],[],lb,ub,[],options);
-        end
+    % Run hierarchical EM fitting
+    modout = EMfit_AET(behav_data, config.task, model, params.lb, params.ub, print_progress, print_visuals);
 
-        % Find the best fitting parameter values
-        minNLL(iS) = min(NLLEval);   % minimum negative log likelihood over all starting positions
-        ix = find(minNLL(iS) == NLLEval);    % indices of location of minimum, to find the corresponding best fit parameters
-        minNLLFitParams(iS,:) = FitParams(ix(1),:); % get corresponding parameter values at lowest NLL
+    fprintf('\n=== CALCULATING INTEGRATED BIC ===\n');
 
-        % Calculate BIC/AIC
-        BIC(iS) = allParams.nParams * log(allData.nObservations(iS)) + 2*minNLL(iS);
-        AIC(iS) = 2/allData.nObservations(iS) * minNLL(iS) + 2 * allParams.nParams/allData.nObservations(iS);
+    modout.bicint = cal_BICint_ms(modout, behav_data, config.task, model, 2000, print_progress);
+    modout.choiceprob_median_R2 = choiceProbR2(modout.fitted_params_real, config.task, model, behav_data);
+    %% ============================================================================
+    %  STEP 5: SAVE RESULTS
+    %% ============================================================================
+
+    % Create output directory
+    outputDir = [config.paths.data_fit];
+
+    if ~exist(outputDir, 'dir')
+        mkdir(outputDir);
+        fprintf('Created directory: %s\n', outputDir);
+    end
+    
+    % Save results
+    save_name = sprintf('%s/fitting_hierarchical_M%d', outputDir, modelNum);
+    save(save_name, 'modout', '-v7.3');
+
+    %% ============================================================================
+    %  STEP 6: DISPLAY SUMMARY
+    %% ============================================================================
+
+    fprintf('\n=== FITTING SUMMARY ===\n');
+    fprintf('Model: %d\n', modelNum);
+    fprintf('Converged at iteration: %d/%d\n', modout.iiter, modout.maxit);
+
+    fprintf('\nGroup-level parameter estimates:\n');
+    for iP = 1:nParams
+        fprintf('  %s: %.3f\n', model.paramNames{iP}, ...
+            modout.real_mu(iP));
     end
 
-
-    %% plots
-
-        % close all
-        % 
-        % if allParams.nParams > 1
-        %     combinations = nchoosek(1:allParams.nParams,2);
-        % 
-        % 
-        %     figure; tl = tiledlayout('flow', 'TileSpacing', 'Compact');
-        % 
-        %     for i= 1:size(combinations,1)
-        %         nexttile;
-        %         scatter(minNLLFitParams(:,combinations(i,1)),minNLLFitParams(:,combinations(i,2)))
-        %         xlabel(sprintf('Fit %s', model.paramNames{:,combinations(i,1)}))
-        %         ylabel(sprintf('Fit %s', model.paramNames{:,combinations(i,2)}))
-        %     end
-        % 
-        %     title(tl, 'Best fit parameter distributions')
-        % else
-        %     figure
-        %     tl = tiledlayout('flow', 'TileSpacing', 'Compact');
-        %     nexttile;
-        %     boxchart(minNLLFitParams(:,:))
-        %     xlabel(sprintf('Fit %s', model.paramNames{1}))
-        % end
-
-
-    % save results
-    medianParams = median(minNLLFitParams);
-
-    minNLLFitParams = array2table(minNLLFitParams, "VariableNames",model.paramNames);
-    save_name = sprintf('../../data_derived/%s/fitting/fitting_M%d', fitOptions.version, m);
-    save(save_name, 'AIC', 'BIC', 'minNLLFitParams', 'minNLL')
-
 end
+%% ============================================================================
+%  DONE!
+%% ============================================================================
 
+fprintf('\nFitted %d model(s): %s\n', length(modelNumbers), mat2str(modelNumbers));

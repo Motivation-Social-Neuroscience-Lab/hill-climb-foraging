@@ -1,165 +1,155 @@
-%% ---- Script to recover AET model for predator-prey task ---- %%
-% Emma Scholey
-% latest update 14 August 2023
+%% Parameter and model identifiability for AET Models
+%
+% Emma Scholey AET
+% Date: 25/11/2025
+% Adapted from Todd Vogel PAR scripts 2024
 
 clear
 close all
 
 addpath('./helperFunctions')
-addpath('../../figures/functions/')
-
-run figure_properties_aet.m
 
 %% user options
 
 % model options
-%modelNum = 6; % model type - see model table to check number to choose
-modelNum = 107; % model type - see model table to check number to choose
+model_id = 8; % winning model for parameter recovery
+model_ids = [3,5, 8, 10]; % all model set for identifiability
+modelTable = readtable('./AETModelTable.xlsx');
 
-%modelTable = readtable('./AETModelTable_final.xlsx'); 
-modelTable = readtable('./AETModelTable_new.xlsx'); 
+study_version = 'mri';
+fit_flag = 0;
 
+nsims = 100; % number of simulated participants
 
-%% set up
+%% SET UP --------------------------------------------------------------
+% load fit parameters
+load([config.paths.data_fit, 'fitting_hierarchical_M' modelNum]);
 
-funcOptions.version = 'mri';
+% load study settings
+config = config_study(study_version, fit_flag);
 
-% simulation options
-funcOptions.type = 'simulate_new'; % 'simulate_new' if simulating new parameters, 'simulate_fit' if simulating already fit parameters for each subject
-funcOptions.nSim = 100;
+% load and prepare dataframe container for simulations
+behav_data = buildData(config, fit_flag, nsims);
 
-% load task
-task = buildTask(funcOptions); % set up task
+%% SIMULATIONS ------------------------------------------------------------
 
-% load dataframe container for simulations
-allData = buildData(funcOptions);
+% generate parameters from uniform distribution
+sim_params_real = min(modout.fitted_params_real,[],2) + (max(modout.fitted_params_real,[],2) - min(modout.fitted_params_real,[],2)) .* rand(height(modout.fitted_params_real), nsims); %uniform distribution bounded by min/max of real data
 
-% load model
-model = table2struct(modelTable(modelTable.modelNumber == modelNum,:));
+% Simulate and fit X number of times
+simdata = cell(1, nsims);
 
-% load agent parameters 
-funcOptions.type = 'recover'; % we want to generate new parameters from scratch, not load existing. Temporarily change flag.
-%allParams = buildParams(model,funcOptions); clear params
-allParams = buildParams_new(model,funcOptions); clear params
+for isub = 1:nsims
 
-model.paramNames = allParams.names;
+    agent = behav_data{randi(numel(behav_data))}; %grab the trial order from a random participant each loop (shouldn't really matter, but do just in case)
 
-funcOptions.type = 'simulate_new'; % revert back 
-
-%% run simulations
-
-for iS = 1:funcOptions.nSim
-
-        iS
-
-        agentParams = allParams.params{iS,:};
-        agent.data = allData.data{iS}; 
-        agent.blockOrder = allData.blockOrder(iS,:);
-
-        %[~,results] = simulate_AET_task(task,model,agent,agentParams);
-        [~,results] = simulate_AET_task_new(task,model,agent,agentParams);
-
-
-        for iB = 1:6 % each block
-            simData.data{iS}{iB} = table2array(results(results.blockNumber == iB,{'response', 'effortLevel', 'realEffort','blockType', 'reward'}));
-        end
-        simData.nObservations(iS) = sum(results.response ~= 8888);
-end
-
-%% fit back to the simulated data 
-funcOptions.type = 'fit'; % 'simulate_new' if simulating new parameters, 'simulate_fit' if simulating already fit parameters for each subject
-funcOptions.nSim = 1; % how many search points 
-
-% load random set of start parameters for fmincon search
-%searchParams = buildParams(model,funcOptions);
-searchParams = buildParams_new(model,funcOptions);
-
-paramArray = table2array(searchParams.params);
-
-options = optimoptions('fmincon','Display','none'); % don't display
-lb = searchParams.lb;
-ub = searchParams.ub;
-
-% initialise containers
-minNLLFitParams_recovered = zeros([allData.nSim allParams.nParams]);
-
-for iS = 1:allData.nSim
-
-    iS
-
-    agent.data = simData.data{iS};
-    agent.blockOrder = allData.blockOrder(iS,:);
-
-    NLLEval = zeros([funcOptions.nSim, 1]);
-    FitParams = zeros([funcOptions.nSim, allParams.nParams]);
-
-    % Run fmincon
-    parfor ii = 1:funcOptions.nSim
-        params0 =  paramArray(ii,:);
-
-        %f = @(x0)simulate_AET_task(task,model,agent,x0);
-        f = @(x0)simulate_AET_task_new(task,model,agent,x0);
-
-        [FitParams(ii,:),NLLEval(ii)] = fmincon(f,params0,[],[],[],[],lb,ub,[],options);
-    end
-
-    % Find the best fitting parameter values
-    minNLL = min(NLLEval);   % minimum negative log likelihood over all starting positions
-    ix = find(minNLL == NLLEval);    % indices of location of minimum, to find the corresponding best fit parameters
-    minNLLFitParams_recovered(iS,:) = FitParams(ix(1),:); % get corresponding parameter values at lowest NLL
+    [~, ~, simdata{isub}] = simulate_AET_model(config.task, modout.model, agent, sim_params_real(:, isub)');
 
 end
 
-%% plots
-close all
+% Get parameter names and bounds
+    [params] = buildParams(modout.model);
+    model.paramNames = params.names;
 
-figure; tl = tiledlayout('flow', 'TileSpacing', 'Compact');
+% Fit model using simulated data
+    fitted_sim_model = EMfit_AET(simdata, config.task, modout.model, params.lb, params.ub, true);
 
-for i= 1:allParams.nParams
+% Plot correlation between real and recovered parameters
+for isim = 1:nsims
+    sim_real_t(:, isim) = sim_params_real(:, isim);
+    sim_fitted_t(:, isim) = fitted_sim_model.fitted_params_real(:, isim);
+end
+
+figure;
+t = tiledlayout('flow','TileSpacing','Compact');
+title(t, sprintf('%s\n', modout.model_name), 'Interpreter', 'none', 'FontWeight', 'bold'); %turn off interpreter to ignore underscores as subscripts
+for iparam = 1:height(sim_real_t)
+    pearson_corr = corr(sim_real_t(iparam, :).', sim_fitted_t(iparam, :).', 'Type', 'Pearson'); %TV now doing it on transformed params...
     nexttile;
-    scatter(allParams.params{:,i},minNLLFitParams_recovered(:,i))
-    
-    xlabel(['Simulated ' , model.paramNames{i}])
-    ylabel(['Fit ' , model.paramNames{i}])
-    model.paramNames{i}
-
-    corr([allParams.params{:,i}, minNLLFitParams_recovered(:,i)], 'type', 'Spearman')
+    scatter(sim_real_t(iparam, :), sim_fitted_t(iparam, :));
+    text(min(get(gca, 'xlim')), max(get(gca, 'ylim')), sprintf('pearson: %f', pearson_corr), "FontSize",12);
+    set(gca,'FontSize', 14)
 end
 
-
-% plot trade off between parameters 
-if allParams.nParams > 1
-    combinations = nchoosek(1:allParams.nParams,2);
-    figure; tl = tiledlayout('flow', 'TileSpacing', 'Compact');
-
-    for i= 1:size(combinations,1)
-        nexttile;
-        scatter(minNLLFitParams_recovered(:,combinations(i,1)),minNLLFitParams_recovered(:,combinations(i,2)))
-        xlabel(sprintf('Fit %s', model.paramNames{:,combinations(i,1)}))
-        ylabel(sprintf('Fit %s', model.paramNames{:,combinations(i,2)}))
-
-       disp(model.paramNames{:,combinations(i,1)})
-       disp(model.paramNames{:,combinations(i,2)})
-       [r, p] = corr(minNLLFitParams_recovered(:,combinations(i,1)),minNLLFitParams_recovered(:,combinations(i,2)), 'type', 'Spearman');
-    end
-end
-
-
-%% plot heatmap
-r = corr(table2array(allParams.params),minNLLFitParams_recovered, type="Spearman");
-r = round(r,2);
-figure('Units', 'centimeters', 'PaperPositionMode', 'auto' ,'Position',figsize.square);
-h = heatmap(r,'MissingDataColor','w', 'GridVisible', 'off', 'ColorLimits',[-1,1]);
+figure;
+h = heatmap(corr(sim_real_t.', sim_fitted_t.', 'Type', 'Pearson'),'MissingDataColor','w', 'GridVisible', 'off', 'ColorLimits',[-1,1]);
 colormap(brewermap([], 'RdBu'));
 
-%labels = ["\kappa","\beta","\alpha"];
-labels = ["\kappa_1","\beta","\omega", '\alpha'];
-
-h.XDisplayLabels = labels;
-h.YDisplayLabels = labels; 
+h.XDisplayLabels = params.names;
+h.YDisplayLabels = params.names; 
 h.XLabel = 'simulated';
 h.YLabel = 'estimated';
-set(gca,'FontSize',fontsize)
+set(gca,'FontSize', 16)
 
-FormatFig_For_Export(gcf,fontsize,fontname,widths.axis)
-%print([sprintf('../../figures/panels/parameter_recovery_M%d_',modelNum), funcOptions.version],'-dsvg')
+% plot parameter trade-offs
+figure;
+combinations = nchoosek(1:height(sim_fitted_t),2);
+
+t = tiledlayout('flow','TileSpacing','Compact');
+title(t, sprintf('%s\n', modout.model_name), 'Interpreter', 'none', 'FontWeight', 'bold'); %turn off interpreter to ignore underscores as subscripts
+for i = 1:size(combinations,1)
+    pearson_corr = corr(sim_fitted_t(combinations(i,1), :).', sim_fitted_t(combinations(i,2), :).', 'Type', 'Pearson'); %TV now doing it on transformed params...
+    nexttile;
+    scatter(sim_fitted_t(combinations(i,1), :), sim_fitted_t(combinations(i,2),:));
+    text(min(get(gca, 'xlim')), max(get(gca, 'ylim')), sprintf('pearson: %f', pearson_corr), "FontSize",12);
+    set(gca,'FontSize', 14)
+
+    xlabel(sprintf('Fit %s', params.names{:,combinations(i,1)}))
+    ylabel(sprintf('Fit %s', params.names{:,combinations(i,2)}))
+
+    disp(params.names{:,combinations(i,1)})
+    disp(params.names{:,combinations(i,2)})
+
+end
+
+
+
+%% Model Identifiability ------------------------------------------------------------
+% Simulate data for each model and compare identifiability against all other models
+
+% n_models = numel(model_ids);
+% fitted_sim_models = cell(n_models, n_models);
+% for imodel = 1:n_models
+%     real_model_id = model_ids(imodel);
+%     fprintf("\n----------\nStarting MI for Model %d\n----------\n", real_model_id);
+% 
+%     % Simulate data for model
+%     nsims = 100; % number of simulated participants
+% 
+%     sim_params_real = min(modout.fitted_params_real,[],2) + (max(modout.fitted_params_real,[],2) - min(modout.fitted_params_real,[],2)) .* rand(height(modout.fitted_params_real), nsims); %uniform distribution bounded by min/max of real data
+% 
+%     for isub = 1:nsims
+% 
+%         agent = behav_data{randi(numel(behav_data))}; %grab the trial order from a random participant each loop (shouldn't really matter, but do just in case)
+%         [~, ~, simdata{isub}] = simulate_AET_model(config.task, modout.model, agent, sim_params_real(:, isub)');
+% 
+%     end
+% 
+%     % Fit simulated data on all models
+%     for jmodel = 1:n_models % for the number of models
+%         tmp_model_id = model_ids(jmodel);
+%         fprintf("MI for Model %d: Now fitting Model %d\n", real_model_id, tmp_model_id);
+% 
+%         % Get parameter names and bounds for the fitting models
+%         tmp_model = table2struct(modelTable(modelTable.modelNumber == tmp_model_id,:));
+%         [params] = buildParams(tmp_model);
+%         tmp_model.paramNames = params.names;
+% 
+%         % Fit model using simulated data
+%         fitted_sim_models{imodel, jmodel} = EMfit_AET(simdata, config.task, tmp_model, params.lb, params.ub, true);
+%         fitted_sim_models{imodel, jmodel}.bicint = cal_BICint_ms(fitted_sim_models{imodel, jmodel}, simdata, config.task, tmp_model, 2000, false);
+% 
+%     end
+% end
+% disp('done!');
+% 
+% bic_mat = zeros(n_models, n_models);
+% lme_mat = zeros(n_models, n_models);
+% xp_mat = zeros(n_models, n_models);
+% for irow = 1:height(fitted_sim_models)
+%     for jcol = 1:width(fitted_sim_models)
+%         bic_mat(irow,jcol) = fitted_sim_models{irow, jcol}.bicint;
+%         lme_mat(irow,jcol) = sum(fitted_sim_models{irow, jcol}.lme);
+%     end
+%     [~, ~, xp_mat(irow, :)] = spm_BMS(lme_mat(irow, :));
+% end
