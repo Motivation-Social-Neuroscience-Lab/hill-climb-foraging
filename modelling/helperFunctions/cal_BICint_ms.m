@@ -53,7 +53,7 @@ for isubj = 1:nsubj
         params(:,k) = gauss2real(Gsamples(:,k), lb, ub);
 
         % Compute negative log likelihood
-        subnll(k) = simulate_AET_task_new(task, model, agent, params(:, k)');
+        subnll(k) = simulate_AET_model(task, model, agent, params(:, k)');
     end
 
     % Update the progress of the loop

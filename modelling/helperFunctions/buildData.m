@@ -10,7 +10,7 @@ if fit_flag == 0 % if simulating
     % NOTE: we have to simulate by block, because we don't know how many trials the agent will go through (depending on choices)
     % so we need to give more trials than actually used.
 
-    load([config.paths.dataDerived, 'behav_summary_', config.version]);
+    load([config.paths.data_behav, 'behav_summary_', config.version]);
     results(config.excluded_subjects) = [];
 
     for iS = 1:length(results)

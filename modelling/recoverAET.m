@@ -12,8 +12,8 @@ addpath('./helperFunctions')
 %% user options
 
 % model options
-model_id = 8; % winning model for parameter recovery
-model_ids = [3,5, 8, 10]; % all model set for identifiability
+model_id = 1; % winning model for parameter recovery
+model_ids = [1:6]; % all model set for identifiability
 modelTable = readtable('./AETModelTable.xlsx');
 
 study_version = 'mri';
@@ -22,11 +22,11 @@ fit_flag = 0;
 nsims = 100; % number of simulated participants
 
 %% SET UP --------------------------------------------------------------
-% load fit parameters
-load([config.paths.data_fit, 'fitting_hierarchical_M' modelNum]);
-
 % load study settings
 config = config_study(study_version, fit_flag);
+
+% load fit parameters
+load([config.paths.data_fit, 'fitting_hierarchical_M' num2str(model_id)]);
 
 % load and prepare dataframe container for simulations
 behav_data = buildData(config, fit_flag, nsims);
@@ -46,6 +46,7 @@ for isub = 1:nsims
     [~, ~, simdata{isub}] = simulate_AET_model(config.task, modout.model, agent, sim_params_real(:, isub)');
 
 end
+    fprintf('\n=== SIMULATIONS COMPLETE ===\n');
 
 % Get parameter names and bounds
     [params] = buildParams(modout.model);
@@ -124,7 +125,8 @@ end
 %         [~, ~, simdata{isub}] = simulate_AET_model(config.task, modout.model, agent, sim_params_real(:, isub)');
 % 
 %     end
-% 
+%      fprintf('\n=== SIMULATIONS COMPLETE ===\n');
+
 %     % Fit simulated data on all models
 %     for jmodel = 1:n_models % for the number of models
 %         tmp_model_id = model_ids(jmodel);

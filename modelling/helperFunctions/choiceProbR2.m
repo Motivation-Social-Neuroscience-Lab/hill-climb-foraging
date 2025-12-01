@@ -27,7 +27,7 @@ choiceprobs_mean   = zeros(1, nsubj);
 for isubj = 1:nsubj
 
     agent = behav_data{isubj};
-    [~, out] = simulate_AET_task_new(task, model, agent, fitted_params_real(:, isubj)'); 
+    [~, out] = simulate_AET_model(task, model, agent, fitted_params_real(:, isubj)'); 
 
     choiceprobs_median(isubj) = median(out.pSelected);
     choiceprobs_mean(isubj)   = mean(out.pSelected);

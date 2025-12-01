@@ -10,19 +10,13 @@
 %% Set up ------------------------------------------------------------------
 clearvars; close all
 
-%addpath('../../figures/functions/')
-addpath('./helperFunctions/')
-
-run figure_properties_aet.m
-
-study_version = 'online'; % which version of data to look at (v1, v3, mri)
+study_version = 'mri'; % which version of data to look at (v1, v3, mri)
 fit_flag = 0;
 
-model_ids = [3,5,8,10]; 
+model_ids = [1:6]; 
 
 %model_ids = [3,8]; % weight tau vs no tau - no tau is better
 %model_ids = [1,3,5]; % no tau - weight vs additive vs original - weight is better
-
 
 
 %% Load model outputs -----------------------------------------------------
@@ -34,7 +28,7 @@ fitted_models = cell(1,length(model_ids));
 model_ids = arrayfun(@(x) sprintf('M%d', x), model_ids, 'UniformOutput', false);
 
 for imodel = 1:length(model_ids)
-    load([config.paths.data_fit, 'fitting_hierarchical_M' model_ids{imodel}]);
+    load([config.paths.data_fit, 'fitting_hierarchical_' model_ids{imodel}]);
     fitted_models{imodel} = modout;
     
 end
