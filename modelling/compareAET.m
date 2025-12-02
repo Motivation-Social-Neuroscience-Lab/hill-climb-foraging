@@ -10,10 +10,10 @@
 %% Set up ------------------------------------------------------------------
 clearvars; close all
 
-study_version = 'mri'; % which version of data to look at (v1, v3, mri)
+study_version = 'v3'; % which version of data to look at (v1, v3, mri)
 fit_flag = 0;
 
-model_ids = [1:6]; 
+model_ids = [2,3,5,6]; 
 
 %model_ids = [3,8]; % weight tau vs no tau - no tau is better
 %model_ids = [1,3,5]; % no tau - weight vs additive vs original - weight is better

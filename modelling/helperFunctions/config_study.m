@@ -53,7 +53,7 @@ switch study
         cfg.task.magnitudes = [0.1 0.4 0.7]; % magnitudes on grip force device
         cfg.task.effortLevels = [1 2 3]; % arbitrary level unit
         cfg.task.reward = 2; % set the same as the mid effort level
-        cfg.task.magnitudeToLevel = containers.Map({0.2, 0.4, 0.6}, {1, 2, 3});
+        cfg.task.magnitudeToLevel = containers.Map({0.1, 0.4, 0.7}, {1, 2, 3});
 
         % File paths
         cfg.paths.data_fit = '../data/fit/v3/';

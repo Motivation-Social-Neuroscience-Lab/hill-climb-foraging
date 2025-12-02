@@ -11,10 +11,9 @@ addpath('./helperFunctions')
 save_data =0; % flag to save data (1) or not (0)
 
 % model options
-modelNum = 8; % model type - see model table to check number to choose
+modelNum = 5; % model type - see model table to check number to choose
 
-study_version = 'mri';
-fit_flag = 0;
+study_version = 'v3';
 
 param_type = 'fit'; % which parameters to simulate {uniform, fit, median}
 nsims = 500; % number of simulated participants (doesn't apply if using 'fit' parameters)
@@ -22,10 +21,11 @@ nsims = 500; % number of simulated participants (doesn't apply if using 'fit' pa
 
 %% SET UP --------------------------------------------------------------
 % load study settings
+fit_flag = 0;
 config = config_study(study_version, fit_flag);
 
 % load fit parameters
-load([config.paths.data_fit, 'fitting_hierarchical_M' modelNum]);
+load([config.paths.data_fit, 'fitting_hierarchical_M' num2str(modelNum)]);
 
 % load and prepare dataframe container for simulations
 behav_data = buildData(config, fit_flag, nsims);
@@ -155,41 +155,41 @@ set(gca, 'FontSize', 14)
 sgtitle('Metrics by Environment and Effort Level', 'FontSize', 16, 'FontWeight', 'bold')
 
 %% Plot trajectories for participants
-% 
-% % Figure 1: Background Effort Rate
-% figure;
-% tl2 = tiledlayout('flow', 'TileSpacing', 'Compact', 'Padding', 'Compact');
-% 
-% for i = 1:modout.nsubj % if simulating more agents than subjects, just take the same n as fitted subjects 
-%     nexttile
-%     validTrials = ~isnan(results.trajectories.background(i, :));
-%     plot(results.trajectories.time(validTrials), ...
-%         results.trajectories.background(i, validTrials), ...
-%         'LineWidth', 1.5, 'Color', 'k');
-%     if mod(i, 2) == 1
-%         ylabel('Background Effort Rate');
-%     end
-%     set(gca, 'FontSize', 12)
-%     grid on
-% end
-% 
-% sgtitle('Background Effort Rate Over Trials', 'FontSize', 16, 'FontWeight', 'bold')
-% 
-% % Figure 2: Opp Cost Rate
-% figure;
-% tl3 = tiledlayout('flow', 'TileSpacing', 'Compact', 'Padding', 'Compact');
-% 
-% for i = 1:modout.nsubj % if simulating more agents than subjects, just take the same n as fitted subjects 
-%     nexttile
-%     validTrials = ~isnan(results.trajectories.oppCost(i, :));
-%     plot(results.trajectories.time(validTrials), ...
-%         results.trajectories.oppCost(i, validTrials), ...
-%         'LineWidth', 1.5, 'Color', 'k');
-%     if mod(i, 2) == 1
-%         ylabel('Opp Cost Rate');
-%     end
-%     set(gca, 'FontSize', 12)
-%     grid on
-% end
-% 
-% sgtitle('Opportunity Cost Rate Over Trials', 'FontSize', 16, 'FontWeight', 'bold')
+
+% Figure 1: Background Effort Rate
+figure;
+tl2 = tiledlayout('flow', 'TileSpacing', 'Compact', 'Padding', 'Compact');
+
+for i = 1:modout.nsubj % if simulating more agents than subjects, just take the same n as fitted subjects 
+    nexttile
+    validTrials = ~isnan(results.trajectories.background(i, :));
+    plot(results.trajectories.time(validTrials), ...
+        results.trajectories.background(i, validTrials), ...
+        'LineWidth', 1.5, 'Color', 'k');
+    if mod(i, 2) == 1
+        ylabel('Background Effort Rate');
+    end
+    set(gca, 'FontSize', 12)
+    grid on
+end
+
+sgtitle('Background Effort Rate Over Trials', 'FontSize', 16, 'FontWeight', 'bold')
+
+% Figure 2: Opp Cost Rate
+figure;
+tl3 = tiledlayout('flow', 'TileSpacing', 'Compact', 'Padding', 'Compact');
+
+for i = 1:modout.nsubj % if simulating more agents than subjects, just take the same n as fitted subjects 
+    nexttile
+    validTrials = ~isnan(results.trajectories.oppCost(i, :));
+    plot(results.trajectories.time(validTrials), ...
+        results.trajectories.oppCost(i, validTrials), ...
+        'LineWidth', 1.5, 'Color', 'k');
+    if mod(i, 2) == 1
+        ylabel('Opp Cost Rate');
+    end
+    set(gca, 'FontSize', 12)
+    grid on
+end
+
+sgtitle('Opportunity Cost Rate Over Trials', 'FontSize', 16, 'FontWeight', 'bold')
