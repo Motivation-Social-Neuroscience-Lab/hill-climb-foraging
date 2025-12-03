@@ -53,13 +53,13 @@ end
 
 % EM algorithm parameters
 convCrit = 0.001;
-maxiter = 20;
+maxiter = 50;
 options = optimoptions(@fminunc, 'Display', 'off', 'Algorithm', 'quasi-newton');
 
 % %% ==================== INITIALIZATION ====================
 % initialise group-level parameter mean and variance - Gaussian space
-posterior_mu     = randn(npar, 1);
-posterior_sigma2 = repmat(100, npar, 1); % Start with wide prior
+posterior_mu     = repmat(0,npar,1);%randn(npar, 1);
+posterior_sigma2 = repmat(1, npar, 1); % Start with wide prior % ES: changed to unit prior in line with G&D to fix alpha conversion problems 
 
 % Initialize tracking variables
 NPL = zeros(nsubj, maxiter);
@@ -261,10 +261,30 @@ for iP = 1:npar
     histogram(modout.fitted_params_real(iP, :), 20, 'Normalization', 'pdf');
     hold on;
 
-    mu = gauss2real(modout.gauss_mu(iP), lb, ub);
+    % mu = gauss2real(modout.gauss_mu(iP), lb, ub);
+    % sigma = sqrt(modout.gauss_sigma2(iP));
+    % % Fitted group distribution   %% ES - FIX: change gauss to real space
+    % x = linspace(lb(iP), ub(iP), 200);
+    % plot(x, normpdf(x, mu, sigma), ...
+    %     'r-', 'LineWidth', 2);
+
+    xlabel(model.paramNames{iP});
+    title('Individual Distribution');
+    legend('Empirical');
+end
+
+figure;
+
+for iP = 1:npar
+    subplot(2, npar, iP);
+
+    % Individual estimates
+    histogram(modout.fitted_params_gaussian(iP, :), 20, 'Normalization', 'pdf');
+    hold on;
+
+    mu = modout.gauss_mu(iP);
     sigma = sqrt(modout.gauss_sigma2(iP));
-    % Fitted group distribution   %% ES - FIX: change gauss to real space
-    x = linspace(lb(iP), ub(iP), 200);
+    x = linspace(-5*sigma, 5*sigma, 200) + mu;
     plot(x, normpdf(x, mu, sigma), ...
         'r-', 'LineWidth', 2);
 

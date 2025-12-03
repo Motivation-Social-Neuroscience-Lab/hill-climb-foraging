@@ -17,9 +17,9 @@ for i = 1:length(params)
         %ES - could add positive real here to capture beta lower
         %values, but low priority. : exponential distribution
 
-    elseif lb(i) == 0 && ub(i) == 1 % unit (0,1): logistic transform
-        %params_real(i) = 1 ./ (1 + exp(-params(i))); % logistic transform
-        params_real(i) = normcdf(params(i));
+    elseif lb(i) == 0 && ub(i) == 1 % unit (0,1):
+        params_real(i) = 1 ./ (1 + exp(-params(i))); % logistic transform
+        %params_real(i) = normcdf(params(i)); % Used link function from G&D: (this is unit normal cdf so squashes any input to 0-1 and transforms unit normal prior to uniform prior) 
 
     else % bounded (lb, ub): logistic scaled to bounds
         params_real(i) = 1 ./ (1 + exp(-params(i)));

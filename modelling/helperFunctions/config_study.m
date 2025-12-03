@@ -27,6 +27,7 @@ switch study
         cfg.task.magnitudes = [0.2 0.4 0.6]; % magnitudes on grip force device
         cfg.task.effortLevels = [1 2 3]; % arbitrary level unit
         cfg.task.reward = 2; % set the same as the mid effort level
+        cfg.task.credits = [4,2,6]; % mode, min, max, for defining distribution for simulating credit structure
         cfg.task.magnitudeToLevel = containers.Map({0.2, 0.4, 0.6}, {1, 2, 3});
 
         % File paths
@@ -53,6 +54,7 @@ switch study
         cfg.task.magnitudes = [0.1 0.4 0.7]; % magnitudes on grip force device
         cfg.task.effortLevels = [1 2 3]; % arbitrary level unit
         cfg.task.reward = 2; % set the same as the mid effort level
+        cfg.task.credits = [3,2,4]; % mode, min, max, for defining distribution for simulating credit structure
         cfg.task.magnitudeToLevel = containers.Map({0.1, 0.4, 0.7}, {1, 2, 3});
 
         % File paths
@@ -80,6 +82,7 @@ switch study
         cfg.task.magnitudes = [0.2 0.4 0.6]; % magnitudes on grip force device
         cfg.task.effortLevels = [1 2 3]; % arbitrary level unit
         cfg.task.reward = 2; % set the same as the mid effort level
+        cfg.task.credits = [4,2,6]; % mode, min, max, for defining distribution for simulating credit structure
         cfg.task.magnitudeToLevel = containers.Map({0.2, 0.4, 0.6}, {1, 2, 3});
 
         % File paths
@@ -107,6 +110,8 @@ switch study
         cfg.task.magnitudes = [0.3 0.5 0.7]; % magnitudes on grip force device
         cfg.task.effortLevels = [1 2 3]; % arbitrary level unit
         cfg.task.reward = 2; % set the same as the mid effort level
+        cfg.task.credits = [1,1,1]; % mode, min, max, for defining distribution for simulating credit structure
+
         cfg.task.magnitudeToLevel = containers.Map({0.2, 0.4, 0.6}, {1, 2, 3});
 
         % File paths

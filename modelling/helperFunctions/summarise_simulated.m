@@ -36,6 +36,7 @@ trialCounts = cellfun(@(tbl) height(tbl), simdata);
 maxTrials = max(trialCounts);
 backgroundTraj = nan(nSubj, maxTrials);
 oppCostTraj = nan(nSubj, maxTrials);
+backgroundRewTraj = nan(nSubj, maxTrials);
 
 for iSub = 1:nSubj
     tbl = simdata{iSub};
@@ -45,6 +46,7 @@ for iSub = 1:nSubj
 
     nTrials = height(tbl);
     backgroundTraj(iSub, 1:nTrials) = tbl.backgroundEffort;
+    backgroundRewTraj(iSub, 1:nTrials) = tbl.backgroundReward;
     oppCostTraj(iSub, 1:nTrials) = tbl.oppCost;
 
     for iEnv = 1:nEnv
@@ -58,6 +60,9 @@ for iSub = 1:nSubj
                 offerValue(iSub, iEff, iEnv) = mean(tbl.predictedValue(mask), 'omitnan');
                 backgroundEffort(iSub, iEff, iEnv) = mean(tbl.backgroundEffort(mask), 'omitnan');
                 effortPE(iSub, iEff, iEnv) = mean(tbl.effortPE(mask), 'omitnan');
+                rewardPE(iSub, iEff, iEnv) = mean(tbl.rewardPE(mask), 'omitnan');
+                backgroundReward(iSub, iEff, iEnv) = mean(tbl.backgroundReward(mask), 'omitnan');
+
             end
         end
     end
@@ -76,8 +81,15 @@ metrics.background.mean = squeeze(mean(backgroundEffort, 1, 'omitnan'));
 metrics.effortPE.raw = effortPE;
 metrics.effortPE.mean = squeeze(mean(effortPE, 1, 'omitnan'));
 
+metrics.rewardPE.raw = rewardPE;
+metrics.rewardPE.mean = squeeze(mean(rewardPE, 1, 'omitnan'));
+
+metrics.backgroundRew.raw = backgroundReward;
+metrics.backgroundRew.mean = squeeze(mean(backgroundReward, 1, 'omitnan'));
+
 metrics.trajectories.time = (1:maxTrials)';
 metrics.trajectories.background = backgroundTraj;
+metrics.trajectories.backgroundRew = backgroundRewTraj;
 metrics.trajectories.oppCost = oppCostTraj;
 
 

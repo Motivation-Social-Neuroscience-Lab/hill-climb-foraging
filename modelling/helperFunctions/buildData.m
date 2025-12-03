@@ -44,9 +44,10 @@ if fit_flag == 0 % if simulating
             v = results{iS}.blockType(results{iS}.blockNumber == iB); v = repmat(v, ceil(100/numel(v)), 1);
             df{iS}{iB}.blockType = v(1:100);
 
-            v = results{iS}.reward(results{iS}.blockNumber == iB); v = repmat(v, ceil(100/numel(v)), 1);
-            df{iS}{iB}.reward = v(1:100);
-
+            % v = results{iS}.reward(results{iS}.blockNumber == iB); v = repmat(v, ceil(100/numel(v)), 1);
+            % df{iS}{iB}.reward = v(1:100);
+            df{iS}{iB}.reward = generateRewardVector(config.task.credits(1), config.task.credits(2), config.task.credits(3), 100);
+            
         end
     end
 

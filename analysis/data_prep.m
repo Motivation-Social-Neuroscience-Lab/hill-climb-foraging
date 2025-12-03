@@ -162,14 +162,14 @@ for i = 1:length(matFiles)
 
 end
 
-save(['~/Dropbox/average-effort/data_derived/' task_version '/blockOrder_' task_version '.mat'], 'blockOrder')
+save(['~/Dropbox/average-effort/code/data/behavioural/', task_version '/blockOrder_' task_version '.mat'], 'blockOrder')
 
-save(['~/Dropbox/average-effort/data_derived/' task_version '/behav_summary_' task_version '.mat'], 'results')
+save(['~/Dropbox/average-effort/code/data/behavioural/', task_version '/behav_summary_' task_version '.mat'], 'results')
 
 %% write behavioural results
 results = vertcat(results{:});
 
-filename = ['~/Dropbox/average-effort/data_derived/' task_version '/behav_summary_' task_version '.csv'];
+filename = ['~/Dropbox/average-effort/code/data/behavioural/' task_version '/behav_summary_' task_version '.csv'];
 
 writetable(results, filename)
 
@@ -179,7 +179,7 @@ mvc(:, 1) = MVC';
 mvc(:, 2) = postMVC';
 
 mvc = array2table(mvc);
-filename = ['~/Dropbox/average-effort/data_derived/' task_version '/mvc_summary_' task_version '.csv'];
+filename = ['~/Dropbox/average-effort/code/data/behavioural/' task_version '/mvc_summary_' task_version '.csv'];
 
 writetable(mvc, filename);
 

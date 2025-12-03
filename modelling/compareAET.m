@@ -10,14 +10,12 @@
 %% Set up ------------------------------------------------------------------
 clearvars; close all
 
-study_version = 'v3'; % which version of data to look at (v1, v3, mri)
+study_version = 'v1'; % which version of data to look at (v1, v3, mri)
 fit_flag = 0;
 
-model_ids = [2,3,5,6]; 
-
-%model_ids = [3,8]; % weight tau vs no tau - no tau is better
-%model_ids = [1,3,5]; % no tau - weight vs additive vs original - weight is better
-
+%model_ids = [2,5,7,8,9,10]; 
+model_ids = [2,7];
+%model_ids = [5, 8, 10];
 
 %% Load model outputs -----------------------------------------------------
 config = config_study(study_version, fit_flag);
