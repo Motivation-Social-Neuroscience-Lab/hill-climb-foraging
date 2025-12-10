@@ -17,17 +17,17 @@ addpath('./helperFunctions')
 %% ============================================================================
 
 % Which models to fit
-modelNumbers = [2, 7];
+modelNumbers = [1:6];
 
-% Fitting options
-study_version = 'v1';  % 'v1', 'v3', or 'mri'
+% Fitting optionso
+study_version = 'v3';  % 'v1', 'v3', or 'mri'
 fit_flag = 1; % are we fitting?
 
 % Load model table
 modelTable = readtable('./AETModelTable.xlsx');
 
 print_progress = true;
-print_visuals = true;
+print_visuals = false;
 
 %% ============================================================================
 %  LOOP THROUGH MODELS

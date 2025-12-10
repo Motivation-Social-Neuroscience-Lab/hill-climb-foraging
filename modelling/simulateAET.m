@@ -11,9 +11,9 @@ addpath('./helperFunctions')
 save_data = 0; % flag to save data (1) or not (0)
 
 % model options
-modelNum = 7; % model type - see model table to check number to choose
+modelNum = 6; % model type - see model table to check number to choose
 
-study_version = 'v1';
+study_version = 'v3';
 
 param_type = 'fit'; % which parameters to simulate {uniform, fit, median}
 nsims = 500; % number of simulated participants (doesn't apply if using 'fit' parameters)

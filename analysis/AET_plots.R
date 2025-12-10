@@ -17,10 +17,10 @@ setwd('~/Dropbox/average-effort/code/analysis/') # adjust as required
 
 # select the data you want to analyse
 
-task_version = 'mri' # v1, v3 or mri
+task_version = 'v3' # v1, v3 or mri
 model_number = '' #If running statistics on simulated data, include model_number + underscore (e.g. 'M6_'). If not, then leave blank ('')
 
-d <- read.csv(paste('../../data_derived/',task_version,'/cleaned_behav_summary_',model_number, task_version,'.csv', sep = ""))
+d <- read.csv(paste('../data/behavioural/',task_version,'/cleaned_behav_summary_',model_number, task_version,'.csv', sep = ""))
 
 # set the factor levels
 
@@ -51,6 +51,9 @@ source('../../figures/functions/ggplot_style_file.R')
 
 #d <- d %>% filter( !subjectNumber %in% c(3, 5, 36))
 
+# # calculate mean experienced reward/effort for initialising background estimates in computational models
+# exp_eff <- d %>% mutate(exerted_effort = effort/111*response) %>% group_by(subjectNumber) %>% summarise(eff = mean(exerted_effort)) %>% summarise(mean(eff))
+# exp_rew <- d %>% group_by(subjectNumber) %>% summarise(rew = mean(response*2)) %>% summarise(mean(rew))
 #----------------------------------------------------- ACCEPT RATE ---------------------------------------------------# 
 d.accept.rate <- d %>% group_by(subjectNumber, blockType, effortLevel) %>% summarise(acceptRate = mean(response))
 # Combine blockType and effortLevel into a single factor for grouping on the x-axis
@@ -559,7 +562,7 @@ ggsave(file = paste0('plots/', task_version, '/', model_number, 'RT_eff_history_
 reward_BF_01 <- exp((BIC(reward_model) - BIC(main_model)) / 2)
 
 # -------------------------- Model parameter correlations with behaviour ------------------------- # 
-model_params <- read.csv(paste('../../data_derived/',task_version,'/fitting_hierarchical/fit_params_M3.csv', sep = ""))
+model_params <- read.csv(paste('../data/fit/',task_version,'/fit_params_M2.csv', sep = ""))
 
 d.opp.cost <- d %>% 
   filter(effortLevel == 'mid') %>%

@@ -12,27 +12,26 @@ addpath('./helperFunctions')
 %% user options
 
 % model options
-model_id = 2; % winning model for parameter recovery
-model_ids = [2,7]; % all model set for identifiability
+model_id = 1; % winning model for parameter recovery
+model_ids = [1,3]; % all model set for identifiability
 modelTable = readtable('./AETModelTable.xlsx');
 
-study_version = 'v1';
+study_version = 'mri';
 fit_flag = 0;
-
-nsims = 100; % number of simulated participants
 
 %% SET UP --------------------------------------------------------------
 % load study settings
 config = config_study(study_version, fit_flag);
 
-% load fit parameters
-load([config.paths.data_fit, 'fitting_hierarchical_M' num2str(model_id)]);
-
 % load and prepare dataframe container for simulations
+nsims = 5000; % number of simulated participants
 behav_data = buildData(config, fit_flag, nsims);
 
 %% SIMULATIONS ------------------------------------------------------------
 
+% % load fit parameters
+% load([config.paths.data_fit, 'fitting_hierarchical_M' num2str(model_id)]);
+%
 % % generate parameters from uniform distribution
 % sim_params_real = min(modout.fitted_params_real,[],2) + (max(modout.fitted_params_real,[],2) - min(modout.fitted_params_real,[],2)) .* rand(height(modout.fitted_params_real), nsims); %uniform distribution bounded by min/max of real data
 % 
@@ -107,12 +106,16 @@ behav_data = buildData(config, fit_flag, nsims);
 
 %% Model Identifiability ------------------------------------------------------------
 % Simulate data for each model and compare identifiability against all other models
+nsims = 100; % number of simulated participants
 
 n_models = numel(model_ids);
 fitted_sim_models = cell(n_models, n_models);
 for imodel = 1:n_models
     real_model_id = model_ids(imodel);
     fprintf("\n----------\nStarting MI for Model %d\n----------\n", real_model_id);
+
+    % load model
+    load([config.paths.data_fit, 'fitting_hierarchical_M' num2str(real_model_id)]);
 
     % Simulate data for model
     nsims = 100; % number of simulated participants

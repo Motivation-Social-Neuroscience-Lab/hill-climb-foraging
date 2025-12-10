@@ -1,7 +1,15 @@
 function [negLL, results, response_out] = simulate_AET_model(task,model,agent,agentParams)
 
-% convert parameter array to table to allow indexing
+% set up parameters
 params = array2table(agentParams); params.Properties.VariableNames = model.paramNames;
+
+beta = params.beta;
+kOffer = params.kOffer; 
+
+switch model.discountFunction
+    case 'weight'
+        weight = params.weight;
+end
 
 % set up trial counters
 trialTask = 1; % start trials in task counter
@@ -26,33 +34,35 @@ switch model.learnFunction
     case {'expected', 'reward'}
         delay = 1;
         bE = task.effortLevels(2);
-        bR = task.reward;
+        bR = task.credits(1);
+        alpha = params.alpha;
     case 'exerted'
         delay = 1;
-        bE = task.effortLevels(1); % most likely to accept low effort level
-        bR = task.reward;
-    case {'expected_tau', 'reward_tau'}
-        delay = task.acceptTime;
-        bE = task.effortLevels(2)/delay;
-        bR = task.reward/delay;
-    case 'exerted_tau'
-        delay = task.acceptTime;
-        bE = task.effortLevels(1)/delay; % most likely to accept low effort level
-        bR = task.reward/delay;
+        bE = task.effortLevels(1); %task.effortLevels(1); % start lower - most likely to accept lowest effort level
+        bR = task.credits(1);
+        alpha = params.alpha;
+    case 'response_history'
+        delay = 1;
+        bE = task.effortLevels(2);
+        bR = 0.5; % start equally likely to accept vs reject
+        alpha = params.alpha;
+    case 'fixed'
+        delay = 1;
+        bE = 0; 
+        bR = 0; 
+        oppCost_params = [params.oppCost_easy, params.oppCost_hard];
+
+    % case {'expected_tau','exerted_tau', 'reward_tau'}
+    %     delay = task.acceptTime;
+    %     bE = task.effortLevels(2)/delay;
+    %     bR = task.reward/delay;
+    %     alpha = params.alpha;
 end
 
-weight = params.weight;
 
-R = task.reward; % fix reward to 2, equivalent to effort level 2
-%R = task.credits(1); % fix at mode credits
-
-oppCost = 0; % opp cost, taking into account pursue time (task.acceptTime)
-effortPE = 0; % no PE on first trial 
-rewardPE = 0; % no PE on first trial 
-
-alpha = params.alpha;
-beta = params.beta;
-kOffer = params.kOffer; 
+R = task.credits(1);
+effortPE = 0; 
+rewardPE = 0;
 
 logLikelihood = 0; % for model fitting
 
@@ -69,10 +79,24 @@ while blockN <= task.nBlocks
 
     % calculate opportunity cost given estimate of background value (bR -
     % bE) and delay of accepting
-    oppCost = (bR - bE) * delay;
 
-    % compute subjective value
-    SV = (1-weight)*(R-kOffer*E^2) - weight*(oppCost);
+    switch model.learnFunction
+        case {'expected', 'exerted', 'reward'}
+            oppCost = (bR - bE) * delay; 
+        case 'response_history'
+            oppCost = bR;
+        case 'fixed'
+            oppCost = oppCost_params(blockType(trialBlock) == task.env); 
+
+    end
+
+    switch model.discountFunction
+        case 'weight'
+            SV = (1-weight)*(R-kOffer*E^2) - weight*oppCost; % compute subjective value
+        case 'none'
+            SV = (R-kOffer*E^2) - oppCost; % compute subjective value
+    end
+
 
     % make decision
     pAccept = softmaxAccept(beta, SV, 0); % oppCost will be 0 if backgroundEffort already weighting value
@@ -101,11 +125,12 @@ while blockN <= task.nBlocks
 
     logLikelihood = logLikelihood + log(pSelected); % update log likelihood
 
-    % effort prediction error
+    % prediction error
     switch model.learnFunction
         case {'expected', 'expected_tau'}
             effortPE = E - bE;
         case {'exerted', 'exerted_tau'}
+
             if response(trialBlock) == 0 % if didn't accept
                 effortPE = 0 - bE;
             elseif response(trialBlock) == 1
@@ -113,11 +138,14 @@ while blockN <= task.nBlocks
             end            
 
         case {'reward', 'reward_tau'}
+
             if response(trialBlock) == 0 % if didn't accept
                 rewardPE = 0 - bR;
             elseif response(trialBlock) == 1
                 rewardPE = reward(trialBlock) - bR;
             end 
+        case 'response_history'
+            rewardPE = response(trialBlock) - bR;
     end
 
     % log the data
@@ -130,18 +158,18 @@ while blockN <= task.nBlocks
         case 'expected_tau'
             bE = bE + alpha * effortPE; % update at cue onset
             for ii = 1:tau-1 
-                bE = (1 - alpha) * bE;            
+                bE = (1 - alpha) * bE;  % E = 0 for timesteps in trial             
             end
         case 'exerted_tau'
             for ii = 1:tau-1 
-                bE = (1 - alpha) * bE;
+                bE = (1 - alpha) * bE; % E = 0 for timesteps in trial
             end
             bE = bE + alpha * effortPE; % update at end of trial once effort exerted
-        case 'reward'
+        case {'reward', 'response_history'}
             bR = bR + alpha * rewardPE;
         case 'reward_tau'
             for ii = 1:tau-1
-                bR = (1 - alpha) * bR;
+                bR = (1 - alpha) * bR;  % R = 0 for timesteps in trial
             end
             bR = bR + alpha * rewardPE;
     end

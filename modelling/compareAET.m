@@ -10,12 +10,13 @@
 %% Set up ------------------------------------------------------------------
 clearvars; close all
 
-study_version = 'v1'; % which version of data to look at (v1, v3, mri)
+study_version = 'mri'; % which version of data to look at (v1, v3, mri)
 fit_flag = 0;
 
-%model_ids = [2,5,7,8,9,10]; 
-model_ids = [2,7];
-%model_ids = [5, 8, 10];
+%model_ids = [1:6];
+%model_ids = [1,4:6];
+%model_ids = [3,4];
+model_ids = [1,6];
 
 %% Load model outputs -----------------------------------------------------
 config = config_study(study_version, fit_flag);

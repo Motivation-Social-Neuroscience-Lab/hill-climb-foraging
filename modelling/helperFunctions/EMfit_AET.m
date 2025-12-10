@@ -53,13 +53,13 @@ end
 
 % EM algorithm parameters
 convCrit = 0.001;
-maxiter = 50;
+maxiter = 10;
 options = optimoptions(@fminunc, 'Display', 'off', 'Algorithm', 'quasi-newton');
 
 % %% ==================== INITIALIZATION ====================
 % initialise group-level parameter mean and variance - Gaussian space
-posterior_mu     = repmat(0,npar,1);%randn(npar, 1);
-posterior_sigma2 = repmat(1, npar, 1); % Start with wide prior % ES: changed to unit prior in line with G&D to fix alpha conversion problems 
+posterior_mu     = randn(npar, 1); %repmat(0,npar,1);
+posterior_sigma2 = repmat(100, npar, 1);%repmat(1, npar, 1); % Start with wide prior % ES: changed to unit prior in line with G&D to fix alpha conversion problems 
 
 % Initialize tracking variables
 NPL = zeros(nsubj, maxiter);
@@ -134,6 +134,10 @@ for iiter = 1:maxiter
     NPL_old = sum(NPL(:, iiter));
 
     if print_visuals == true
+        if iiter == 1
+            figure; % Create the figure only once
+        end
+        clf; % Clear the current figure for rewriting
         tiledlayout('flow'); % TODO: find better way than 'flow', e.g., using model_id to determine number of panels...
         nexttile;
 
