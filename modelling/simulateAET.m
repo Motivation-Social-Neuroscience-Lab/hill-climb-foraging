@@ -11,9 +11,9 @@ addpath('./helperFunctions')
 save_data = 0; % flag to save data (1) or not (0)
 
 % model options
-modelNum = 6; % model type - see model table to check number to choose
+modelNum = 1; % model type - see model table to check number to choose
 
-study_version = 'v3';
+study_version = 'mri';
 
 param_type = 'fit'; % which parameters to simulate {uniform, fit, median}
 nsims = 500; % number of simulated participants (doesn't apply if using 'fit' parameters)
@@ -201,7 +201,7 @@ sgtitle('Metrics by Environment and Effort Level', 'FontSize', 16, 'FontWeight',
 
 %% Plot trajectories for participants
 
-% Figure 1: Background Effort Rate
+% Figure: Background Effort Rate
 figure;
 tl2 = tiledlayout('flow', 'TileSpacing', 'Compact', 'Padding', 'Compact');
 
@@ -220,7 +220,7 @@ end
 
 sgtitle('Background Effort Rate Over Trials', 'FontSize', 16, 'FontWeight', 'bold')
 
-% Figure 2: Opp Cost Rate
+% Figure: Opp Cost Rate
 figure;
 tl3 = tiledlayout('flow', 'TileSpacing', 'Compact', 'Padding', 'Compact');
 
@@ -240,7 +240,7 @@ end
 sgtitle('Opportunity Cost Rate Over Trials', 'FontSize', 16, 'FontWeight', 'bold')
 
 
-% Figure 3: Background Reward Rate
+% Figure: Background Reward Rate
 figure;
 tl2 = tiledlayout('flow', 'TileSpacing', 'Compact', 'Padding', 'Compact');
 
@@ -258,3 +258,21 @@ for i = 1:modout.nsubj % if simulating more agents than subjects, just take the 
 end
 
 sgtitle('Background Reward Rate Over Trials', 'FontSize', 16, 'FontWeight', 'bold')
+
+
+% Figure: parameter distributions
+figure;
+tl2 = tiledlayout('flow', 'TileSpacing', 'Compact', 'Padding', 'Compact');
+
+for i = 1:modout.npar 
+    nexttile
+    histogram(modout.fitted_params_real(i,:))
+    xlabel(modout.param_names{i})
+    if mod(i, 2) == 1
+        ylabel('N subjects');
+    end
+    set(gca, 'FontSize', 12)
+    grid on
+end
+
+sgtitle('Parameter distributions', 'FontSize', 16, 'FontWeight', 'bold')
