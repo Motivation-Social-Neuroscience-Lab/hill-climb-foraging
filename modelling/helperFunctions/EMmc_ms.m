@@ -13,6 +13,8 @@ arguments
     model_ids (1, :) {mustBeA(model_ids, 'cell')}
 end
 
+xtickrot = 25;
+
 % Get model info
 for imodel = 1:numel(model_ids)
     model_id = model_ids{imodel};
@@ -26,11 +28,10 @@ h = figure('name', "AET");
 sgtitle('Bayesian Model Comparison');
 tiledlayout("flow");
 
-nexttile;
-bar(sum(lme_all)); 
-xtickrot = 25;
-set(gca, 'XTick', 1:numel(model_ids), 'XTickLabel', model_ids, 'XTickLabelRotation', xtickrot); 
-ylabel('Summed log evidence (more is better)', 'FontWeight', 'bold');
+% nexttile;
+% bar(sum(lme_all)); 
+% set(gca, 'XTick', 1:numel(model_ids), 'XTickLabel', model_ids, 'XTickLabelRotation', xtickrot); 
+% ylabel('Summed log evidence (more is better)', 'FontWeight', 'bold');
 
 % 2) BICint
 nexttile;
@@ -45,14 +46,16 @@ ylabel('Δ BICint from lowest', 'FontWeight', 'bold'); %TV: adjusted label to re
 nexttile;
 bar(BMS.xp);
 set(gca,'XTick', 1:numel(model_ids), 'XTickLabel', model_ids, 'XTickLabelRotation', xtickrot);
-rl1 = refline(0, 0.95);     
+rl1 = yline(0.8);     
+ylim([0,1])
 set(rl1, 'linestyle', '--', 'Color', 'r');
 ylabel('Exceedence Probability', 'FontWeight', 'bold');
 
 % Calculate protected exceedance probabilities
-nexttile;
-bar(BMS.pxp);
-set(gca,'XTick', 1:numel(model_ids), 'XTickLabel', model_ids, 'XTickLabelRotation', xtickrot);
-rl1 = refline(0, 0.95);     
-set(rl1, 'linestyle', '--', 'Color', 'r');
-ylabel('Protexted XP', 'FontWeight', 'bold');
+% nexttile;
+% bar(BMS.pxp);
+% set(gca,'XTick', 1:numel(model_ids), 'XTickLabel', model_ids, 'XTickLabelRotation', xtickrot);
+% rl1 = yline(0.8);     
+% ylim([0,1])
+% set(rl1, 'linestyle', '--', 'Color', 'r');
+% ylabel('Protexted XP', 'FontWeight', 'bold');

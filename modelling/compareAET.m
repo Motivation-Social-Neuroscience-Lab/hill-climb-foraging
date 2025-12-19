@@ -17,11 +17,12 @@ fit_flag = 0;
 
 %model_ids = [1:6];
 %model_ids = [1,4:6];
-model_ids = [3,4];
-model_ids = [1,6];
-model_ids = [1,5];
+%model_ids = [3,4];
+%model_ids = [1,6];
+%model_ids = [1,5];
 model_ids = [4,5];
-model_ids = [1,5,6];
+%model_ids = [1,4,5];
+model_ids = [1,5];
 
 %% Load model outputs -----------------------------------------------------
 config = config_study(study_version, fit_flag);

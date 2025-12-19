@@ -13,7 +13,7 @@ addpath('./helperFunctions')
 
 % model options
 model_id = 1; % winning model for parameter recovery
-model_ids = [1,3]; % all model set for identifiability
+%model_ids = [1,3]; % all model set for identifiability
 modelTable = readtable('./AETModelTable.xlsx');
 
 study_version = 'mri';
@@ -29,83 +29,83 @@ behav_data = buildData(config, fit_flag, nsims);
 
 %% SIMULATIONS ------------------------------------------------------------
 
-% % load fit parameters
-% load([config.paths.data_fit, 'fitting_hierarchical_M' num2str(model_id)]);
-%
-% % generate parameters from uniform distribution
-% sim_params_real = min(modout.fitted_params_real,[],2) + (max(modout.fitted_params_real,[],2) - min(modout.fitted_params_real,[],2)) .* rand(height(modout.fitted_params_real), nsims); %uniform distribution bounded by min/max of real data
-% 
-% % Simulate and fit X number of times
-% simdata = cell(1, nsims);
-% 
-% for isub = 1:nsims
-% 
-%     agent = behav_data{randi(numel(behav_data))}; %grab the trial order from a random participant each loop (shouldn't really matter, but do just in case)
-% 
-%     [~, ~, simdata{isub}] = simulate_AET_model(config.task, modout.model, agent, sim_params_real(:, isub)');
-% 
-% end
-%     fprintf('\n=== SIMULATIONS COMPLETE ===\n');
-% 
-% % Get parameter names and bounds
-%     [params] = buildParams(modout.model);
-%     model.paramNames = params.names;
-% 
-% % Fit model using simulated data
-%     fitted_sim_model = EMfit_AET(simdata, config.task, modout.model, params.lb, params.ub, true);
-% 
-% % Plot correlation between real and recovered parameters
-% for isim = 1:nsims
-%     sim_real_t(:, isim) = sim_params_real(:, isim);
-%     sim_fitted_t(:, isim) = fitted_sim_model.fitted_params_real(:, isim);
-% end
-% 
-% figure;
-% t = tiledlayout('flow','TileSpacing','Compact');
-% title(t, sprintf('%s\n', modout.model_name), 'Interpreter', 'none', 'FontWeight', 'bold'); %turn off interpreter to ignore underscores as subscripts
-% for iparam = 1:height(sim_real_t)
-%     pearson_corr = corr(sim_real_t(iparam, :).', sim_fitted_t(iparam, :).', 'Type', 'Pearson'); %TV now doing it on transformed params...
-%     nexttile;
-%     scatter(sim_real_t(iparam, :), sim_fitted_t(iparam, :));
-%     text(min(get(gca, 'xlim')), max(get(gca, 'ylim')), sprintf('pearson: %f', pearson_corr), "FontSize",12);
-%     set(gca,'FontSize', 14)
-% end
-% 
-% figure;
-% h = heatmap(corr(sim_real_t.', sim_fitted_t.', 'Type', 'Pearson'),'MissingDataColor','w', 'GridVisible', 'off', 'ColorLimits',[-1,1]);
-% colormap(brewermap([], 'RdBu'));
-% 
-% h.XDisplayLabels = params.names;
-% h.YDisplayLabels = params.names; 
-% h.XLabel = 'simulated';
-% h.YLabel = 'estimated';
-% set(gca,'FontSize', 16)
-% 
-% % plot parameter trade-offs
-% figure;
-% combinations = nchoosek(1:height(sim_fitted_t),2);
-% 
-% t = tiledlayout('flow','TileSpacing','Compact');
-% title(t, sprintf('%s\n', modout.model_name), 'Interpreter', 'none', 'FontWeight', 'bold'); %turn off interpreter to ignore underscores as subscripts
-% for i = 1:size(combinations,1)
-%     pearson_corr = corr(sim_fitted_t(combinations(i,1), :).', sim_fitted_t(combinations(i,2), :).', 'Type', 'Pearson'); %TV now doing it on transformed params...
-%     nexttile;
-%     scatter(sim_fitted_t(combinations(i,1), :), sim_fitted_t(combinations(i,2),:));
-%     text(min(get(gca, 'xlim')), max(get(gca, 'ylim')), sprintf('pearson: %f', pearson_corr), "FontSize",12);
-%     set(gca,'FontSize', 14)
-% 
-%     xlabel(sprintf('Fit %s', params.names{:,combinations(i,1)}))
-%     ylabel(sprintf('Fit %s', params.names{:,combinations(i,2)}))
-% 
-%     disp(params.names{:,combinations(i,1)})
-%     disp(params.names{:,combinations(i,2)})
-% 
-% end
-% 
+% load fit parameters
+load([config.paths.data_fit, 'fitting_hierarchical_M' num2str(model_id)]);
+
+% generate parameters from uniform distribution
+sim_params_real = min(modout.fitted_params_real,[],2) + (max(modout.fitted_params_real,[],2) - min(modout.fitted_params_real,[],2)) .* rand(height(modout.fitted_params_real), nsims); %uniform distribution bounded by min/max of real data
+
+% Simulate and fit X number of times
+simdata = cell(1, nsims);
+
+for isub = 1:nsims
+
+    agent = behav_data{randi(numel(behav_data))}; %grab the trial order from a random participant each loop (shouldn't really matter, but do just in case)
+
+    [~, ~, simdata{isub}] = simulate_AET_model(config.task, modout.model, agent, sim_params_real(:, isub)');
+
+end
+    fprintf('\n=== SIMULATIONS COMPLETE ===\n');
+
+% Get parameter names and bounds
+    [params] = buildParams(modout.model);
+    model.paramNames = params.names;
+
+% Fit model using simulated data
+    fitted_sim_model = EMfit_AET(simdata, config.task, modout.model, params.lb, params.ub, true);
+
+% Plot correlation between real and recovered parameters
+for isim = 1:nsims
+    sim_real_t(:, isim) = sim_params_real(:, isim);
+    sim_fitted_t(:, isim) = fitted_sim_model.fitted_params_real(:, isim);
+end
+
+figure;
+t = tiledlayout('flow','TileSpacing','Compact');
+title(t, sprintf('%s\n', modout.model_name), 'Interpreter', 'none', 'FontWeight', 'bold'); %turn off interpreter to ignore underscores as subscripts
+for iparam = 1:height(sim_real_t)
+    pearson_corr = corr(sim_real_t(iparam, :).', sim_fitted_t(iparam, :).', 'Type', 'Pearson'); %TV now doing it on transformed params...
+    nexttile;
+    scatter(sim_real_t(iparam, :), sim_fitted_t(iparam, :));
+    text(min(get(gca, 'xlim')), max(get(gca, 'ylim')), sprintf('pearson: %f', pearson_corr), "FontSize",12);
+    set(gca,'FontSize', 14)
+end
+
+figure;
+h = heatmap(corr(sim_real_t.', sim_fitted_t.', 'Type', 'Pearson'),'MissingDataColor','w', 'GridVisible', 'off', 'ColorLimits',[-1,1]);
+colormap(brewermap([], 'RdBu'));
+
+h.XDisplayLabels = params.names;
+h.YDisplayLabels = params.names; 
+h.XLabel = 'simulated';
+h.YLabel = 'estimated';
+set(gca,'FontSize', 16)
+
+% plot parameter trade-offs
+figure;
+combinations = nchoosek(1:height(sim_fitted_t),2);
+
+t = tiledlayout('flow','TileSpacing','Compact');
+title(t, sprintf('%s\n', modout.model_name), 'Interpreter', 'none', 'FontWeight', 'bold'); %turn off interpreter to ignore underscores as subscripts
+for i = 1:size(combinations,1)
+    pearson_corr = corr(sim_fitted_t(combinations(i,1), :).', sim_fitted_t(combinations(i,2), :).', 'Type', 'Pearson'); %TV now doing it on transformed params...
+    nexttile;
+    scatter(sim_fitted_t(combinations(i,1), :), sim_fitted_t(combinations(i,2),:));
+    text(min(get(gca, 'xlim')), max(get(gca, 'ylim')), sprintf('pearson: %f', pearson_corr), "FontSize",12);
+    set(gca,'FontSize', 14)
+
+    xlabel(sprintf('Fit %s', params.names{:,combinations(i,1)}))
+    ylabel(sprintf('Fit %s', params.names{:,combinations(i,2)}))
+
+    disp(params.names{:,combinations(i,1)})
+    disp(params.names{:,combinations(i,2)})
+
+end
+
 
 
 %% Model Identifiability ------------------------------------------------------------
-% Simulate data for each model and compare identifiability against all other models
+%Simulate data for each model and compare identifiability against all other models
 nsims = 100; % number of simulated participants
 
 n_models = numel(model_ids);
@@ -148,6 +148,12 @@ for imodel = 1:n_models
 end
 disp('done!');
 
+
+%% generate MI XP matrix (either load existing or go straight from previous step)
+%save([config.paths.data_fit, 'MI_', study_version], "fitted_sim_models");
+load([config.paths.data_fit, 'MI_', study_version]);
+n_models = length(fitted_sim_models);
+
 bic_mat = zeros(n_models, n_models);
 lme_mat = zeros(n_models, n_models);
 xp_mat = zeros(n_models, n_models);
@@ -161,4 +167,6 @@ end
 
 figure;
 h = heatmap(xp_mat,'MissingDataColor','w', 'GridVisible', 'off', 'ColorLimits',[-1,1]);
+xlabel('Simulated')
+ylabel('Recovered')
 colormap(brewermap([], 'RdBu'));
