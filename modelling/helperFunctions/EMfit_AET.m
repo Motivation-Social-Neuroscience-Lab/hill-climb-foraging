@@ -53,7 +53,7 @@ end
 
 % EM algorithm parameters
 convCrit = 0.001;
-maxiter = 300;
+maxiter = 100;
 options = optimoptions(@fminunc, 'Display', 'off', 'Algorithm', 'quasi-newton');
 
 % %% ==================== INITIALIZATION ====================

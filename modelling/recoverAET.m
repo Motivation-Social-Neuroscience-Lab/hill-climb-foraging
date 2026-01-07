@@ -17,7 +17,7 @@ model_id = 5; % winning model for parameter recovery
 %model_ids = [1,3]; % all model set for identifiability
 modelTable = readtable('./AETModelTable.xlsx');
 
-study_version = 'mri';
+study_version = 'v3';
 
 run_recovery = true; % choose whether to run recovery procedure, or load existing data (e.g. if run on HPC) 
 run_identifiability = false;
@@ -28,7 +28,7 @@ fit_flag = 0;
 config = config_study(study_version, fit_flag);
 
 % load and prepare dataframe container for simulations
-nsims = 100; % number of simulated participants
+nsims = 50; % number of simulated participants
 behav_data = buildData(config, fit_flag, nsims);
 
 %% Run Recovery  ------------------------------------------------------------

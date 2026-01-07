@@ -86,7 +86,13 @@ while blockN <= task.nBlocks
         case 'response_history'
             oppCost = bR;
         case 'fixed'
-            oppCost = oppCost_params(blockType(trialBlock) == task.env); 
+
+            if blockType(trialBlock) == 11
+                oppCost = oppCost_params(1) + oppCost_params(2); % baseline + shift
+            elseif blockType(trialBlock) == 99
+                oppCost = oppCost_params(1); % baseline
+            end
+            %oppCost = oppCost_params(blockType(trialBlock) == task.env); 
 
     end
 

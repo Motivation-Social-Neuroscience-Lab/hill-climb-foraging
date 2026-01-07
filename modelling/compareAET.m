@@ -12,7 +12,7 @@ clearvars; close all
 
 addpath('./helperFunctions')
 
-study_version = 'mri'; % which version of data to look at (v1, v3, mri)
+study_version = 'v3'; % which version of data to look at (v1, v3, mri)
 fit_flag = 0;
 
 %model_ids = [1:6];

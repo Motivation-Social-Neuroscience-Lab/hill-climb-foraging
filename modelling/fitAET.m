@@ -17,7 +17,7 @@ addpath('./helperFunctions')
 %% ============================================================================
 
 % Which models to fit
-modelNumbers = [1:6];
+modelNumbers = [5];
 
 % Fitting optionso
 study_version = 'v3';  % 'v1', 'v3', or 'mri'
