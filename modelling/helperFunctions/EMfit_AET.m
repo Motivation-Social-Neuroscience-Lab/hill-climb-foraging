@@ -53,13 +53,13 @@ end
 
 % EM algorithm parameters
 convCrit = 0.001;
-maxiter = 10;
+maxiter = 300;
 options = optimoptions(@fminunc, 'Display', 'off', 'Algorithm', 'quasi-newton');
 
 % %% ==================== INITIALIZATION ====================
 % initialise group-level parameter mean and variance - Gaussian space
 posterior_mu     = randn(npar, 1); %repmat(0,npar,1);
-posterior_sigma2 = repmat(100, npar, 1);%repmat(1, npar, 1); % Start with wide prior % ES: changed to unit prior in line with G&D to fix alpha conversion problems 
+posterior_sigma2 = repmat(100, npar, 1);%repmat(1, npar, 1); % Start with wide prior % ES: could change to unit prior in line with G&D to fix alpha conversion problems 
 
 % Initialize tracking variables
 NPL = zeros(nsubj, maxiter);
