@@ -19,21 +19,17 @@ switch model.learnFunction
         alpha = true;
         oppCost_easy = false;
         oppCost_hard = false;
-    % case 'fixed'
-    %     alpha = false;
-    %     oppCost_easy = true;
-    %     oppCost_hard = true;
-    case 'real'
+    case 'fixed'
         alpha = false;
-        oppCost_easy = false;
-        oppCost_hard = false;
+        oppCost_easy = true;
+        oppCost_hard = true;
 end
 
 switch model.discountFunction
     case 'weight'
         weight = true;
-    % case {'none', 'weight_k'}
-    %     weight = false;
+    case {'none', 'weight_k'}
+        weight = false;
 end
 
 params_include = [kOffer, beta, alpha, weight, oppCost_easy, oppCost_hard];

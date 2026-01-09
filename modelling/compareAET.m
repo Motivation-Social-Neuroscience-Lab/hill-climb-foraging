@@ -15,14 +15,14 @@ addpath('./helperFunctions')
 study_version = 'v3'; % which version of data to look at (v1, v3, mri)
 fit_flag = 0;
 
-%model_ids = [1:6];
-%model_ids = [1,4:6];
-%model_ids = [3,4];
+model_ids = [1:22];
+
+model_ids = [1,3,4,5,12,14, 19, 20]; % dummy
+model_ids = [1,3,19];
+%model_ids = [6,8,9,10,11,15,17,18]; % credits
 %model_ids = [1,6];
-%model_ids = [1,5];
-model_ids = [4,5];
-%model_ids = [1,4,5];
-model_ids = [1,5];
+%model_ids = [1,5,12]; % dummy
+%model_ids = [1,3,5]; % dummy
 
 %% Load model outputs -----------------------------------------------------
 config = config_study(study_version, fit_flag);

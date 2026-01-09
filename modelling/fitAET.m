@@ -17,10 +17,10 @@ addpath('./helperFunctions')
 %% ============================================================================
 
 % Which models to fit
-modelNumbers = [5];
+modelNumbers = [1,3,19];
 
 % Fitting optionso
-study_version = 'v3';  % 'v1', 'v3', or 'mri'
+study_version = 'v1';  % 'v1', 'v3', or 'mri'
 fit_flag = 1; % are we fitting?
 
 % Load model table

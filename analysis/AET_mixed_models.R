@@ -19,7 +19,7 @@ task_version = 'mri' # v1, v3 or mri.
 model_number = '' #If running statistics on simulated data, include model_number + underscore. If not, then leave blank ('')
 
 #read data
-behav <- read.csv(paste('../../data_derived/',task_version,'/behav_summary_',model_number, task_version,'.csv', sep = ""))
+behav <- read.csv(paste('../data/behavioural/',task_version,'/behav_summary_',model_number, task_version,'.csv', sep = ""))
 
 # exclude subject 32 for mri (didn't complete the task, too much movement)
 if (model_number== ''){ # if running statistics on real subject data
@@ -55,6 +55,9 @@ if (model_number== ''){ # if running statistics on real subject data
 nSubj <- length(unique(behav$subjectNumber))
 
 ##--------------------------- prepare/recode data for mixed models ----------------------- 
+
+total_avg_effort <- behav %>% mutate(effort = effort/111) %>% 
+  group_by(blockType) %>% summarise(avg_effort = mean(effort)) 
 
 # make factors of categorical predictors
 behav$effortLevel <- factor(behav$effortLevel, labels = c("low", "mid", "high"), ordered = T)  

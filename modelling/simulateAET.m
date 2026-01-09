@@ -11,7 +11,7 @@ addpath('./helperFunctions')
 save_data = 0; % flag to save data (1) or not (0)
 
 % model options
-modelNum = 5; % model type - see model table to check number to choose
+modelNum = 3; % model type - see model table to check number to choose
 
 study_version = 'v3';
 

@@ -29,8 +29,10 @@ switch study
         cfg.task.reward = 2; % set the same as the mid effort level
         cfg.task.credits = [4,2,6]; % mode, min, max, for defining distribution for simulating credit structure
         cfg.task.magnitudeToLevel = containers.Map({0.2, 0.4, 0.6}, {1, 2, 3});
-        cfg.experienced_reward = 1.3;
-        cfg.experienced_effort = 1.1; 
+        cfg.task.real_bE = [1.67,2.33];
+
+        %cfg.experienced_reward = 1.3;
+        %cfg.experienced_effort = 1.1; 
 
         % File paths
         cfg.paths.data_fit = '../data/fit/v1/';
@@ -58,8 +60,10 @@ switch study
         cfg.task.reward = 2; % set the same as the mid effort level
         cfg.task.credits = [3,2,4]; % mode, min, max, for defining distribution for simulating credit structure
         cfg.task.magnitudeToLevel = containers.Map({0.1, 0.4, 0.7}, {1, 2, 3});
-        cfg.experienced_reward = 1.3;
-        cfg.experienced_effort = 1; 
+        cfg.task.real_bE = [1.67,2.33];
+
+        %cfg.experienced_reward = 1.3;
+        %cfg.experienced_effort = 1; 
 
         % File paths
         cfg.paths.data_fit = '../data/fit/v3/';
@@ -88,13 +92,14 @@ switch study
         cfg.task.reward = 2; % set the same as the mid effort level
         cfg.task.credits = [4,2,6]; % mode, min, max, for defining distribution for simulating credit structure
         cfg.task.magnitudeToLevel = containers.Map({0.2, 0.4, 0.6}, {1, 2, 3});
-        cfg.experienced_reward = 1.3;
-        cfg.experienced_effort = 1; 
+        cfg.task.real_bE = [1.67,2.33];
+
+        %cfg.experienced_reward = 1.3;
+        %cfg.experienced_effort = 1; 
 
         % File paths
         cfg.paths.data_fit = '../data/fit/mri/';
         cfg.paths.data_behav = '../data/behavioural/mri/';
-
 
     case 'online'
         %% Version identifier

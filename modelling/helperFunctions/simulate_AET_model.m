@@ -34,23 +34,35 @@ switch model.learnFunction
     case {'expected', 'reward'}
         delay = 1;
         bE = task.effortLevels(2);
-        bR = task.credits(1);
+        switch model.reward
+            case 'dummy'
+                bR = task.reward;
+            case 'credits'
+                bR = task.credits(1);
+        end
         alpha = params.alpha;
-    case 'exerted'
-        delay = 1;
-        bE = task.effortLevels(1); %task.effortLevels(1); % start lower - most likely to accept lowest effort level
-        bR = task.credits(1);
-        alpha = params.alpha;
+    % case 'exerted'
+    %     delay = 1;
+    %     bE = task.effortLevels(1); %task.effortLevels(1); % start lower - most likely to accept lowest effort level
+    %     switch model.reward
+    %         case 'dummy'
+    %             bR = task.reward;
+    %         case 'credits'
+    %             bR = task.credits(1);
+    %     end
+    %     alpha = params.alpha;
     case 'response_history'
         delay = 1;
         bE = task.effortLevels(2);
         bR = 0.5; % start equally likely to accept vs reject
         alpha = params.alpha;
-    case 'fixed'
+    % case 'fixed'
+    %     delay = 1;
+    %     bE = 0; 
+    %     bR = 0; 
+    case 'real'
         delay = 1;
-        bE = 0; 
-        bR = 0; 
-        oppCost_params = [params.oppCost_easy, params.oppCost_hard];
+        bR = 2;
 
     % case {'expected_tau','exerted_tau', 'reward_tau'}
     %     delay = task.acceptTime;
@@ -59,8 +71,13 @@ switch model.learnFunction
     %     alpha = params.alpha;
 end
 
+switch model.reward
+    case 'dummy'
+        R = task.reward;
+    % case 'credits'
+    %     R = task.credits(1);
+end
 
-R = task.credits(1);
 effortPE = 0; 
 rewardPE = 0;
 
@@ -85,27 +102,35 @@ while blockN <= task.nBlocks
             oppCost = (bR - bE) * delay; 
         case 'response_history'
             oppCost = bR;
-        case 'fixed'
-
-            if blockType(trialBlock) == 11
-                oppCost = oppCost_params(1) + oppCost_params(2); % baseline + shift
-            elseif blockType(trialBlock) == 99
-                oppCost = oppCost_params(1); % baseline
+        % case 'fixed'
+        % 
+        %     if blockType(trialBlock) == 11 % easy environment
+        %         oppCost = params.oppCost_easy;
+        %     elseif blockType(trialBlock) == 99 % hard environment 
+        %         oppCost = params.oppCost_hard;
+        %     end
+        case 'real'
+            if blockType(trialBlock) == 11 % easy environment
+                bE = task.real_bE(1);
+            elseif blockType(trialBlock) == 99 % hard environment
+                bE = task.real_bE(2);
             end
-            %oppCost = oppCost_params(blockType(trialBlock) == task.env); 
+            oppCost = (bR - bE) * delay;
 
     end
 
     switch model.discountFunction
         case 'weight'
             SV = (1-weight)*(R-kOffer*E^2) - weight*oppCost; % compute subjective value
-        case 'none'
-            SV = (R-kOffer*E^2) - oppCost; % compute subjective value
+        % case 'weight_k'
+        %     SV = (R-kOffer*E^2) - kOffer*oppCost; % compute subjective value
+        % case 'none'
+        %     SV = (R-kOffer*E^2) - oppCost; % compute subjective value
     end
 
 
     % make decision
-    pAccept = softmaxAccept(beta, SV, 0); % oppCost will be 0 if backgroundEffort already weighting value
+    pAccept = softmaxAccept(beta, SV, 0); % comparator term will be 0 if oppCost already weighting value
 
     if isnan(response(trialBlock)) % if simulating data
         response(trialBlock) = (rand(1) < pAccept);     % make a choice of next action
@@ -135,21 +160,21 @@ while blockN <= task.nBlocks
     switch model.learnFunction
         case {'expected', 'expected_tau'}
             effortPE = E - bE;
-        case {'exerted', 'exerted_tau'}
+        % case {'exerted', 'exerted_tau'}
+        % 
+        %     if response(trialBlock) == 0 % if didn't accept
+        %         effortPE = 0 - bE;
+        %     elseif response(trialBlock) == 1
+        %         effortPE = outcomeEffort(trialBlock) - bE;
+        %     end            
 
-            if response(trialBlock) == 0 % if didn't accept
-                effortPE = 0 - bE;
-            elseif response(trialBlock) == 1
-                effortPE = outcomeEffort(trialBlock) - bE;
-            end            
-
-        case {'reward', 'reward_tau'}
-
-            if response(trialBlock) == 0 % if didn't accept
-                rewardPE = 0 - bR;
-            elseif response(trialBlock) == 1
-                rewardPE = reward(trialBlock) - bR;
-            end 
+        % case {'reward', 'reward_tau'}
+        % 
+        %     if response(trialBlock) == 0 % if didn't accept
+        %         rewardPE = 0 - bR;
+        %     elseif response(trialBlock) == 1
+        %         rewardPE = reward(trialBlock) - bR;
+        %     end 
         case 'response_history'
             rewardPE = response(trialBlock) - bR;
     end
@@ -161,23 +186,23 @@ while blockN <= task.nBlocks
     switch model.learnFunction
         case {'expected', 'exerted'}
             bE = bE + alpha * effortPE;
-        case 'expected_tau'
-            bE = bE + alpha * effortPE; % update at cue onset
-            for ii = 1:tau-1 
-                bE = (1 - alpha) * bE;  % E = 0 for timesteps in trial             
-            end
-        case 'exerted_tau'
-            for ii = 1:tau-1 
-                bE = (1 - alpha) * bE; % E = 0 for timesteps in trial
-            end
-            bE = bE + alpha * effortPE; % update at end of trial once effort exerted
+        % case 'expected_tau'
+        %     bE = bE + alpha * effortPE; % update at cue onset
+        %     for ii = 1:tau-1 
+        %         bE = (1 - alpha) * bE;  % E = 0 for timesteps in trial             
+        %     end
+        % case 'exerted_tau'
+        %     for ii = 1:tau-1 
+        %         bE = (1 - alpha) * bE; % E = 0 for timesteps in trial
+        %     end
+        %     bE = bE + alpha * effortPE; % update at end of trial once effort exerted
         case {'reward', 'response_history'}
             bR = bR + alpha * rewardPE;
-        case 'reward_tau'
-            for ii = 1:tau-1
-                bR = (1 - alpha) * bR;  % R = 0 for timesteps in trial
-            end
-            bR = bR + alpha * rewardPE;
+        % case 'reward_tau'
+        %     for ii = 1:tau-1
+        %         bR = (1 - alpha) * bR;  % R = 0 for timesteps in trial
+        %     end
+        %     bR = bR + alpha * rewardPE;
     end
 
     % time passes
