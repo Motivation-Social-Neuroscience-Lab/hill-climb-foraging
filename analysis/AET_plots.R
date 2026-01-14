@@ -17,7 +17,7 @@ setwd('~/Dropbox/average-effort/code/analysis/') # adjust as required
 
 # select the data you want to analyse
 
-task_version = 'mri' # v1, v3 or mri
+task_version = 'v3' # v1, v3 or mri
 model_number = '' #If running statistics on simulated data, include model_number + underscore (e.g. 'M6_'). If not, then leave blank ('')
 
 d <- read.csv(paste('../data/behavioural/',task_version,'/cleaned_behav_summary_',model_number, task_version,'.csv', sep = ""))
@@ -553,16 +553,15 @@ image
 
 ggsave(file = paste0('plots/', task_version, '/', model_number, 'RT_eff_history_env.pdf'), plot = image, width = figure$width, height = figure$height, unit = 'cm', device = "pdf", bg = "transparent")
 
-
-#############################################################################################################
 ## -------------------------------------- Bayes factors for GLMs ------------------------------------------- ##
 
 # Compare larger vs smaller model to get (null) Bayes factor for previous expected value
 # Using BIC equation (Wagenmakers, 2007): BF01 = exp((BIClarger - BICsmaller) / 2)
 reward_BF_01 <- exp((BIC(reward_model) - BIC(main_model)) / 2)
 
-# -------------------------- Model parameter correlations with behaviour ------------------------- # 
-model_params <- read.csv(paste('../data/fit/',task_version,'/fit_params_M2.csv', sep = ""))
+##--------------------------- Model parameters ----------------------- 
+#model_params <- read.csv(paste('../data/fit/',task_version,'/fit_params_M2.csv', sep = "")) # for v1 and MRI
+model_params <- read.csv(paste('../data/fit/',task_version,'/fit_params_M4.csv', sep = "")) # for v1 and MRI
 
 d.opp.cost <- d %>% 
   filter(effortLevel == 'mid') %>%
@@ -637,27 +636,26 @@ image <- ggplot(d.accept.rate.params, aes(x = beta, y = opp_cost)) +
 image
 
 # weight
-image <- ggplot(d.accept.rate.params, aes(x = weight, y = opp_cost)) + 
-  geom_hline(yintercept = 0, linetype = 'dashed', linewidth = 0.2) +
-  geom_point(shape = 21, fill = figure$colour_model, colour = 'white', size = 1, stroke = 0.1) + 
-  xlab('weight') + ylab('pr(accept): hard - easy') + 
-  geom_smooth(method='lm', formula= y~x, colour = figure$colour_model, linewidth = 0.4) + 
-  theme_classic() + 
-  stat_cor(method = 'pearson', p.digits = 2, size = 2, label.y = 1) + 
-  theme(text = element_text(size = 8))
-image
+# image <- ggplot(d.accept.rate.params, aes(x = weight, y = opp_cost)) + 
+#   geom_hline(yintercept = 0, linetype = 'dashed', linewidth = 0.2) +
+#   geom_point(shape = 21, fill = figure$colour_model, colour = 'white', size = 1, stroke = 0.1) + 
+#   xlab('weight') + ylab('pr(accept): hard - easy') + 
+#   geom_smooth(method='lm', formula= y~x, colour = figure$colour_model, linewidth = 0.4) + 
+#   theme_classic() + 
+#   stat_cor(method = 'pearson', p.digits = 2, size = 2, label.y = 1) + 
+#   theme(text = element_text(size = 8))
+# image
 
 
 # Discount parameter x weight
-image <- ggplot(d.accept.rate.params, aes(x = kOffer, y = weight)) + 
-  geom_hline(yintercept = 0, linetype = 'dashed', linewidth = 0.2) +
-  geom_point(shape = 21, fill = figure$colour_model, colour = 'white', size = 1, stroke = 0.1) + 
-  xlab('discount: ') + ylab('weight') + 
-  geom_smooth(method='lm', formula= y~x, colour = figure$colour_model, linewidth = 0.4) + 
-  theme_classic() + 
-  stat_cor(method = 'pearson', p.digits = 2, size = 2, label.y = 1) + 
-  theme(text = element_text(size = 8))
-image
+# image <- ggplot(d.accept.rate.params, aes(x = kOffer, y = weight)) + 
+#   geom_point(shape = 21, fill = figure$colour_model, colour = 'white', size = 1, stroke = 0.1) + 
+#   xlab('discount: ') + ylab('weight') + 
+#   geom_smooth(method='lm', formula= y~x, colour = figure$colour_model, linewidth = 0.4) + 
+#   theme_classic() + 
+#   stat_cor(method = 'pearson', p.digits = 2, size = 2, label.y = 1) + 
+#   theme(text = element_text(size = 8))
+# image
 #ggsave(file = paste0('plots/', task_version, '/', 'k_opp_cost_correlation', '.pdf'), plot = image, width = 4, height = 4, unit = 'cm', device = "pdf", bg = "transparent")
 
 

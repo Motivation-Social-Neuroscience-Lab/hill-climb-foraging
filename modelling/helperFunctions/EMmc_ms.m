@@ -51,11 +51,11 @@ ylim([0,1])
 set(rl1, 'linestyle', '--', 'Color', 'r');
 ylabel('Exceedence Probability', 'FontWeight', 'bold');
 
-% % Calculate protected exceedance probabilities
-% nexttile;
-% bar(BMS.pxp);
-% set(gca,'XTick', 1:numel(model_ids), 'XTickLabel', model_ids, 'XTickLabelRotation', xtickrot);
-% rl1 = yline(0.8);     
-% ylim([0,1])
-% set(rl1, 'linestyle', '--', 'Color', 'r');
-% ylabel('Protexted XP', 'FontWeight', 'bold');
+% Calculate protected exceedance probabilities
+nexttile;
+bar(BMS.pxp);
+set(gca,'XTick', 1:numel(model_ids), 'XTickLabel', model_ids, 'XTickLabelRotation', xtickrot);
+rl1 = yline(0.8);     
+ylim([0,1])
+set(rl1, 'linestyle', '--', 'Color', 'r');
+ylabel('Protexted XP', 'FontWeight', 'bold');

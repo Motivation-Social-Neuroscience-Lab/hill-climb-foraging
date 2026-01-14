@@ -15,7 +15,7 @@ setwd('~/Dropbox/average-effort/code/analysis/') # adjust as required
 
 # select the data you want to analyse
 
-task_version = 'mri' # v1, v3 or mri. 
+task_version = 'v3' # v1, v3 or mri. 
 model_number = '' #If running statistics on simulated data, include model_number + underscore. If not, then leave blank ('')
 
 #read data

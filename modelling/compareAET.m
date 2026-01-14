@@ -13,18 +13,14 @@ clearvars; close all
 addpath('./helperFunctions')
 
 study_version = 'v3'; % which version of data to look at (v1, v3, mri)
-fit_flag = 0;
 
-model_ids = [1:22];
-
-model_ids = [1,3,4,5,12,14, 19, 20]; % dummy
-model_ids = [1,3,19];
-%model_ids = [6,8,9,10,11,15,17,18]; % credits
-%model_ids = [1,6];
-%model_ids = [1,5,12]; % dummy
-%model_ids = [1,3,5]; % dummy
+model_ids = [2,4,6];
+%model_ids = [1,3,5,6] % don't do 4 because beta goes weird
+%model_ids = [1,3,5,6,14,16:19];
 
 %% Load model outputs -----------------------------------------------------
+fit_flag = 0;
+
 config = config_study(study_version, fit_flag);
 
 fitted_models = cell(1,length(model_ids));

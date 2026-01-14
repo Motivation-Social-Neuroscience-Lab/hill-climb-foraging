@@ -11,7 +11,7 @@ addpath('./helperFunctions')
 save_data = 0; % flag to save data (1) or not (0)
 
 % model options
-modelNum = 3; % model type - see model table to check number to choose
+modelNum = 10; % model type - see model table to check number to choose
 
 study_version = 'v3';
 
@@ -212,8 +212,9 @@ for i = 1:modout.nsubj % if simulating more agents than subjects, just take the 
         results.trajectories.background(i, validTrials), ...
         'LineWidth', 1.5, 'Color', 'r');
     if mod(i, 2) == 1
-        ylabel('Background Effort Rate');
+        ylabel('bE');
     end
+    ylim([1.5, 2.5])
     set(gca, 'FontSize', 12)
     grid on
 end
@@ -231,8 +232,9 @@ for i = 1:modout.nsubj % if simulating more agents than subjects, just take the 
         results.trajectories.oppCost(i, validTrials), ...
         'LineWidth', 1.5, 'Color', 'r');
     if mod(i, 2) == 1
-        ylabel('Opp Cost Rate');
+        ylabel('Opp Cost');
     end
+    %ylim([-0.6,0.6])
     set(gca, 'FontSize', 12)
     grid on
 end
