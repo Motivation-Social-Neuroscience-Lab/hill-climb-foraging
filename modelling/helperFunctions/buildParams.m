@@ -28,7 +28,7 @@ end
 switch model.discountFunction
     case 'weight'
         weight = true;
-    case {'none', 'weight_k'}
+    case {'none', 'weight_k', 'no_k'}
         weight = false;
 end
 

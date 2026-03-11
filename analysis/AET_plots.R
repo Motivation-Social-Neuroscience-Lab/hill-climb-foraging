@@ -17,7 +17,7 @@ setwd('~/Dropbox/average-effort/code/analysis/') # adjust as required
 
 # select the data you want to analyse
 
-task_version = 'v3' # v1, v3 or mri
+task_version = 'mri' # v1, v3 or mri
 model_number = '' #If running statistics on simulated data, include model_number + underscore (e.g. 'M6_'). If not, then leave blank ('')
 
 d <- read.csv(paste('../data/behavioural/',task_version,'/cleaned_behav_summary_',model_number, task_version,'.csv', sep = ""))
@@ -51,8 +51,11 @@ source('../../figures/functions/ggplot_style_file.R')
 
 #d <- d %>% filter( !subjectNumber %in% c(3, 5, 36))
 
+d <- d %>% filter(blockNumber %in% (c(1:4)))
+
+d %>% 
 # # calculate mean experienced reward/effort for initialising background estimates in computational models
-# exp_eff <- d %>% mutate(exerted_effort = effort/111*response) %>% group_by(subjectNumber) %>% summarise(eff = mean(exerted_effort)) %>% summarise(mean(eff))
+ #exp_eff <- d %>% mutate(expected_effort = effort/111*response) %>% group_by(subjectNumber) %>% summarise(eff = mean(expected_effort)) %>% summarise(mean(eff))
 # exp_rew <- d %>% group_by(subjectNumber) %>% summarise(rew = mean(response*2)) %>% summarise(mean(rew))
 #----------------------------------------------------- ACCEPT RATE ---------------------------------------------------# 
 d.accept.rate <- d %>% group_by(subjectNumber, blockType, effortLevel) %>% summarise(acceptRate = mean(response))

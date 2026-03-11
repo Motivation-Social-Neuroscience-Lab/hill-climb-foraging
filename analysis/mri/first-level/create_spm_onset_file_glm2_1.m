@@ -19,7 +19,7 @@ matFiles = matFiles(ix);
 
 for i = 1:length(matFiles)
 
-    modelEstimates = readtable([model_dir, matFiles(i).name(2:3), '/model_estimates_M2_fit_MLE.csv']);
+    modelEstimates = readtable([model_dir, matFiles(i).name(2:3), '/model_estimates_M13_fit_MAP_v2.csv']);
 
     % load data
     load(matFiles(i).name);
@@ -32,14 +32,14 @@ for i = 1:length(matFiles)
     timelog(all(cellfun(@isempty, timelog),2),:) = []; % remove empty straggling rows
 
     cueIndex = find(strcmp(data.timelog.colnames,'offerOnset'));
-    %decisionIndex = find(strcmp(data.timelog.colnames,'decisionOnset'));
+    decisionIndex = find(strcmp(data.timelog.colnames,'decisionOnset'));
     exertIndex = find(strcmp(data.timelog.colnames,'exertOnset'));
     feedbackIndex = find(strcmp(data.timelog.colnames,'feedbackOnset'));
     missIndex = find(strcmp(data.timelog.colnames,'missedOnset'));
 
     cueOnsets = ([timelog{:,cueIndex}] - t1)';
 
-    %decisionOnsets = ([timelog{:,decisionIndex}] - t1)';
+    decisionOnsets = ([timelog{:,decisionIndex}] - t1)';
 
     exertOnsets = ([timelog{:,exertIndex}] - t1)';
     exertOnsets(isnan(exertOnsets)) = [];
@@ -55,34 +55,35 @@ for i = 1:length(matFiles)
 
     %% Generate pmod based on model
 
-    names={'cue' 'exert' 'feedback' 'new_block' 'break'}; % create the names for each condition
+    names={'cue' 'decision', 'exert' 'feedback' 'new_block' 'break'}; % create the names for each condition
 
-    onsets=cell(1,5);
+    onsets=cell(1,length(names));
 
     pmod = struct('name',{''},'param',{},'poly',{});
 
-    durations={0,0,0,5,10}; % specify the durations for each of the 3 conditions, since it is event related each duration is set to 0, new block screen shown for 5s, break of 10 seconds
+    durations={0,0,0,0,5,10}; % specify the durations for each of the 3 conditions, since it is event related each duration is set to 0, new block screen shown for 5s, break of 10 seconds
 
     onsets{1} = [];
-    onsets{2} = exertOnsets;
-    onsets{3} = feedbackOnsets;
+    onsets{2} = decisionOnsets;
+    onsets{3} = exertOnsets;
+    onsets{4} = feedbackOnsets;
 
-    onsets{4} = blockOnsets;
-    onsets{5} = breakOnsets;
+    onsets{5} = blockOnsets;
+    onsets{6} = breakOnsets;
 
-    orth = {0, 0, 0, 0, 0};
+    orth = {0, 0, 0, 0, 0, 0};
 
 
     %% Add missed onsets if applicable
     if ~isempty(missOnsets)% if miss trials, create another regressor
-        names{6} = 'miss'; % create the names for each condition
+        names{7} = 'miss'; % create the names for each condition
 
         for j = 1:length(missOnsets)
             iMiss(j) = find(missOnsets(j) > cueOnsets, 1, "last"); % find cue onset with missed response
         end
-        onsets{6} = cueOnsets(iMiss);
-        durations{6} = 11; % time of a missed trial
-        orth{6} = 0;
+        onsets{7} = cueOnsets(iMiss);
+        durations{7} = 11; % time of a missed trial
+        orth{7} = 0;
 
         % remove these trials from cue Onsets (assume participant ignored this cue)
         keepIdx = true(length(cueOnsets), 1); % init to true
@@ -111,19 +112,19 @@ for i = 1:length(matFiles)
 
     tmp = modelEstimates.realEffort(modelEstimates.response == 1);
     tmp = zscore(tmp);
-    pmod(2).name{1} = 'effort_exerted';
-    pmod(2).param{1} = tmp;
-    pmod(2).poly{1}=1;
+    pmod(3).name{1} = 'effort_exerted';
+    pmod(3).param{1} = tmp;
+    pmod(3).poly{1}=1;
 
     %% Parametric modulators for FEEDBACK
 
     tmp = modelEstimates.reward(modelEstimates.response == 1);
     tmp = zscore(tmp);
-    pmod(3).name{1} = 'reward';
-    pmod(3).param{1} = tmp; % note this will also include failed trials
-    pmod(3).poly{1}=1;
+    pmod(4).name{1} = 'reward';
+    pmod(4).param{1} = tmp; % note this will also include failed trials
+    pmod(4).poly{1}=1;
 
-    save_onsets_dir = '/Volumes/appsmaj-effort-prey-fmri-scholey/aet_fMRI/first_level/z_6m_csf_wm_compcor_M2_fit_MLE/glm2/sub-';
+    save_onsets_dir = '/Volumes/appsmaj-effort-prey-fmri-scholey/aet_fMRI/first_level/z_6m_csf_wm_compcor_M13_fit_MAP/glm2_1/sub-';
     mkdir([save_onsets_dir,matFiles(i).name(2:3)]);
 
     subjectFolder = [save_onsets_dir, matFiles(i).name(2:3), '/'];

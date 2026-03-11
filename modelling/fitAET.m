@@ -13,15 +13,16 @@ close all
 addpath('./helperFunctions')
 
 %% ============================================================================
-%  STEP 1: USER OPTIONS 
+%  STEP 1: USER OPTIONS
 %% ============================================================================
 
 % Which models to fit
-modelNumbers = ;
+modelNumbers = [13];
 
-% Fitting optionso
-study_version = 'v3';  % 'v1', 'v3', or 'mri'
+% Fitting options
+study_version = 'mri';  % 'v1', 'v3', or 'mri'
 fit_flag = 1; % are we fitting?
+fit_type = 'MAP'; % MLE or MAP?
 
 % Load model table
 modelTable = readtable('./AETModelTable.xlsx');
@@ -29,86 +30,139 @@ modelTable = readtable('./AETModelTable.xlsx');
 print_progress = true;
 print_visuals = false;
 
-%% ============================================================================
-%  LOOP THROUGH MODELS
-%% ============================================================================
 
-for iModel = 1:length(modelNumbers)
-    modelNum = modelNumbers(iModel);
+switch fit_type
 
     %% ============================================================================
-    %  STEP 2: SETUP
+    % MAP FITTING
     %% ============================================================================
+    case 'MAP'
+        for iModel = 1:length(modelNumbers)
+            modelNum = modelNumbers(iModel);
+            %% ============================================================================
+            % SETUP
+            fprintf('\n=== HIERARCHICAL BAYESIAN FITTING FOR AET ===\n');
+            fprintf('Model: %d\n', modelNum);
+            fprintf('Version: %s\n', study_version);
 
-    fprintf('\n=== HIERARCHICAL BAYESIAN FITTING FOR AET ===\n');
-    fprintf('Model: %d\n', modelNum);
-    fprintf('Version: %s\n', study_version);
+            % Load task
+            config = config_study(study_version, fit_flag);
 
-    % Load task
-    config = config_study(study_version, fit_flag);
+            % Load participant data
+            behav_data = buildData(config, fit_flag, []);
 
-    % Load participant data
-    behav_data = buildData(config, fit_flag, []);
+            % Load model specification
+            model = table2struct(modelTable(modelTable.modelNumber == modelNum,:));
 
-    % Load model specification
-    model = table2struct(modelTable(modelTable.modelNumber == modelNum,:));
+            % Get parameter names and bounds
+            [params] = buildParams(model);
+            model.paramNames = params.names;
 
-    % Get parameter names and bounds
-    [params] = buildParams(model);
-    model.paramNames = params.names;
+            nSubj = length(behav_data);
+            nParams = length(model.paramNames);
 
-    nSubj = length(behav_data);
-    nParams = length(model.paramNames);
+            fprintf('Parameters: %s\n', strjoin(model.paramNames, ', '));
+            fprintf('Subjects: %d\n', nSubj);
 
-    fprintf('Parameters: %s\n', strjoin(model.paramNames, ', '));
-    fprintf('Subjects: %d\n', nSubj);
+            %% ============================================================================
+            % RUN HIERARCHICAL FITTING
 
-    %% ============================================================================
-    %  STEP 4: RUN HIERARCHICAL FITTING
-    %% ============================================================================
+            fprintf('\n=== RUNNING HIERARCHICAL EM ALGORITHM ===\n');
 
-    fprintf('\n=== RUNNING HIERARCHICAL EM ALGORITHM ===\n');
+            % Run hierarchical EM fitting
+            modout = EMfit_AET(behav_data, config.task, model, params.lb, params.ub, print_progress, print_visuals);
 
-    % Run hierarchical EM fitting
-    modout = EMfit_AET(behav_data, config.task, model, params.lb, params.ub, print_progress, print_visuals);
+            fprintf('\n=== CALCULATING INTEGRATED BIC ===\n');
 
-    fprintf('\n=== CALCULATING INTEGRATED BIC ===\n');
+            modout.bicint = cal_BICint_ms(modout, behav_data, config.task, model, 2000, print_progress);
+            modout.choiceprob_median_R2 = choiceProbR2(modout.fitted_params_real, config.task, model, behav_data);
+            %% ============================================================================
+            %  SAVE RESULTS
 
-    modout.bicint = cal_BICint_ms(modout, behav_data, config.task, model, 2000, print_progress);
-    modout.choiceprob_median_R2 = choiceProbR2(modout.fitted_params_real, config.task, model, behav_data);
-    %% ============================================================================
-    %  STEP 5: SAVE RESULTS
-    %% ============================================================================
+            % Create output directory
+            outputDir = [config.paths.data_fit];
 
-    % Create output directory
-    outputDir = [config.paths.data_fit];
+            if ~exist(outputDir, 'dir')
+                mkdir(outputDir);
+                fprintf('Created directory: %s\n', outputDir);
+            end
 
-    if ~exist(outputDir, 'dir')
-        mkdir(outputDir);
-        fprintf('Created directory: %s\n', outputDir);
-    end
-    
-    % Save results
-    save_name = sprintf('%s/fitting_hierarchical_M%d', outputDir, modelNum);
-    save(save_name, 'modout', '-v7.3');
+            % Save results
+            save_name = sprintf('%s/fitting_hierarchical_M%d', outputDir, modelNum);
+            save(save_name, 'modout', '-v7.3');
 
-    %% ============================================================================
-    %  STEP 6: DISPLAY SUMMARY
-    %% ============================================================================
+            %% ============================================================================
+            %  DISPLAY SUMMARY
 
-    fprintf('\n=== FITTING SUMMARY ===\n');
-    fprintf('Model: %d\n', modelNum);
-    fprintf('Converged at iteration: %d/%d\n', modout.iiter, modout.maxit);
+            fprintf('\n=== FITTING SUMMARY ===\n');
+            fprintf('Model: %d\n', modelNum);
+            fprintf('Converged at iteration: %d/%d\n', modout.iiter, modout.maxit);
 
-    fprintf('\nGroup-level parameter estimates:\n');
-    for iP = 1:nParams
-        fprintf('  %s: %.3f\n', model.paramNames{iP}, ...
-            modout.real_mu(iP));
-    end
+            fprintf('\nGroup-level parameter estimates:\n');
+            for iP = 1:nParams
+                fprintf('  %s: %.3f\n', model.paramNames{iP}, ...
+                    modout.real_mu(iP));
+            end
+
+        end
+        fprintf('\nFitted %d model(s): %s\n', length(modelNumbers), mat2str(modelNumbers));
+
+        %% ============================================================================
+        % MLE FITTING
+        %% ============================================================================
+    case 'MLE'
+        for iModel = 1:length(modelNumbers)
+            modelNum = modelNumbers(iModel);
+            %% ============================================================================
+            % SETUP
+            fprintf('\n=== MLE FITTING FOR AET ===\n');
+            fprintf('Model: %d\n', modelNum);
+            fprintf('Version: %s\n', study_version);
+
+            % Load task
+            config = config_study(study_version, fit_flag);
+
+            % Load participant data
+            behav_data = buildData(config, fit_flag, []);
+
+            % Load model specification
+            model = table2struct(modelTable(modelTable.modelNumber == modelNum,:));
+
+            % Get parameter names and bounds
+            [params] = buildParams(model);
+            model.paramNames = params.names;
+
+            nSubj = length(behav_data);
+            nParams = length(model.paramNames);
+
+            fprintf('Parameters: %s\n', strjoin(model.paramNames, ', '));
+            fprintf('Subjects: %d\n', nSubj);
+
+            %% ============================================================================
+            % RUN MLE FITTING
+
+            fprintf('\n=== RUNNING MAXIMUM LIKELIHOOD ESTIMATION ===\n');
+
+            modout = MLEfit_AET(behav_data, config.task, model, params.lb, params.ub); 
+
+            modout.choiceprob_median_R2 = choiceProbR2(modout.fitted_params_real, config.task, model, behav_data);
+
+            %% ============================================================================
+            %  SAVE RESULTS
+
+            % Create output directory
+            outputDir = [config.paths.data_fit];
+
+            if ~exist(outputDir, 'dir')
+                mkdir(outputDir);
+                fprintf('Created directory: %s\n', outputDir);
+            end
+
+            % Save results
+            save_name = sprintf('%s/fitting_MLE_M%d', outputDir, modelNum);
+            save(save_name, 'modout', '-v7.3');
+
+        end
+        fprintf('\nFitted %d model(s): %s\n', length(modelNumbers), mat2str(modelNumbers));
 
 end
-%% ============================================================================
-%  DONE!
-%% ============================================================================
-
-fprintf('\nFitted %d model(s): %s\n', length(modelNumbers), mat2str(modelNumbers));

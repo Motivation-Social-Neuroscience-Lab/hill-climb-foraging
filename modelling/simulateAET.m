@@ -11,13 +11,14 @@ addpath('./helperFunctions')
 save_data = 0; % flag to save data (1) or not (0)
 
 % model options
-modelNum = 10; % model type - see model table to check number to choose
+modelNum = 13; % model type - see model table to check number to choose
 
-study_version = 'v3';
+study_version = 'mri';
 
 param_type = 'fit'; % which parameters to simulate {uniform, fit, median}
 nsims = 500; % number of simulated participants (doesn't apply if using 'fit' parameters)
 
+fit_type = 'MAP'; % MLE or MAP fitting
 
 %% SET UP --------------------------------------------------------------
 % load study settings
@@ -25,7 +26,13 @@ fit_flag = 0;
 config = config_study(study_version, fit_flag);
 
 % load fit parameters
-load([config.paths.data_fit, 'fitting_hierarchical_M' num2str(modelNum)]);
+
+switch fit_type
+    case 'MAP'
+        load([config.paths.data_fit, 'fitting_hierarchical_M' num2str(modelNum)]);
+    case 'MLE'
+        load([config.paths.data_fit, 'fitting_MLE_M' num2str(modelNum)]);
+end
 
 % load and prepare dataframe container for simulations
 behav_data = buildData(config, fit_flag, nsims);
