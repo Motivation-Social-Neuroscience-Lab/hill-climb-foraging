@@ -12,7 +12,7 @@ modelTable = readtable('./AETModelTable.xlsx');
 %% user options
 
 % model options
-modelNum = 13;
+modelNum = 1;
 
 study_version = 'mri';
 param_type = 'fit'; % which parameters to simulate {fit, median}

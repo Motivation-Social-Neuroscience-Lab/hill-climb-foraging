@@ -19,7 +19,7 @@ matFiles = matFiles(ix);
 
 for i = 1:length(matFiles)
 
-    modelEstimates = readtable([model_dir, matFiles(i).name(2:3), '/model_estimates_M13_fit_MAP_v2.csv']);
+    modelEstimates = readtable([model_dir, matFiles(i).name(2:3), '/model_estimates_M1_fit_MAP.csv']);
 
     % load data
     load(matFiles(i).name);
@@ -124,7 +124,7 @@ for i = 1:length(matFiles)
     pmod(4).param{1} = tmp; % note this will also include failed trials
     pmod(4).poly{1}=1;
 
-    save_onsets_dir = '/Volumes/appsmaj-effort-prey-fmri-scholey/aet_fMRI/first_level/z_6m_csf_wm_compcor_M13_fit_MAP/glm2_1/sub-';
+    save_onsets_dir = '/Volumes/appsmaj-effort-prey-fmri-scholey/aet_fMRI/first_level/z_6m_csf_wm_compcor_M1_fit_MAP/glm2_1_TMFC_v2/sub-';
     mkdir([save_onsets_dir,matFiles(i).name(2:3)]);
 
     subjectFolder = [save_onsets_dir, matFiles(i).name(2:3), '/'];

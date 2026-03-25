@@ -13,11 +13,11 @@ addpath('../analysis/plots/plot_functions')
 %% user options
 
 % model options
-model_id = 2; % winning model for parameter recovery
-model_ids = [2,4,6]; % all model set for identifiability
+model_id = 1; % winning model for parameter recovery
+model_ids = [1,2,3]; % all model set for identifiability
 modelTable = readtable('./AETModelTable.xlsx');
 
-study_version = 'v1';
+study_version = 'mri';
 
 run_recovery = false; % choose whether to run recovery procedure, or load existing data (e.g. if run on HPC)
 plot_recovery = true;
@@ -122,8 +122,10 @@ end
 if run_identifiability == true
     nsims = 100; % number of simulated participants
 
+    % Simulate and fit X number of times
     n_models = numel(model_ids);
     fitted_sim_models = cell(n_models, n_models);
+
     for imodel = 1:n_models
         real_model_id = model_ids(imodel);
         fprintf("\n----------\nStarting MI for Model %d\n----------\n", real_model_id);
@@ -132,6 +134,7 @@ if run_identifiability == true
         load([config.paths.data_fit, 'fitting_hierarchical_M' num2str(real_model_id)]);
 
         sim_params_real = min(modout.fitted_params_real,[],2) + (max(modout.fitted_params_real,[],2) - min(modout.fitted_params_real,[],2)) .* rand(height(modout.fitted_params_real), nsims); %uniform distribution bounded by min/max of real data
+        simdata = cell(1, nsims);
 
         for isub = 1:nsims
 
@@ -163,7 +166,7 @@ if run_identifiability == true
 end
 
 %% generate MI XP matrix (either load existing or go straight from previous step)
-if plot_identifiability == true;
+if plot_identifiability == true
     load([config.paths.data_fit, 'MI_', study_version]);
     n_models = length(fitted_sim_models);
     nsims = fitted_sim_models{1,1}.nsubj;

@@ -51,9 +51,6 @@ source('../../figures/functions/ggplot_style_file.R')
 
 #d <- d %>% filter( !subjectNumber %in% c(3, 5, 36))
 
-d <- d %>% filter(blockNumber %in% (c(1:4)))
-
-d %>% 
 # # calculate mean experienced reward/effort for initialising background estimates in computational models
  #exp_eff <- d %>% mutate(expected_effort = effort/111*response) %>% group_by(subjectNumber) %>% summarise(eff = mean(expected_effort)) %>% summarise(mean(eff))
 # exp_rew <- d %>% group_by(subjectNumber) %>% summarise(rew = mean(response*2)) %>% summarise(mean(rew))
@@ -114,8 +111,9 @@ image
 ggsave(file = paste0('plots/', task_version, '/', model_number, 'accept_rate.pdf'), plot = image, width = figure$width, height = figure$height, unit = 'cm', device = "pdf", bg = "transparent")
 
 # output table of odds ratios and p-values
-
-tmp <- tidy(main_model, conf.int = T, exponentiate = T, effects = 'fixed')
+# get likelihood profile CI rather than Wald (more accurate but takes a while
+# check profile CIs don't go through 1 (OR)
+tmp <- tidy(main_model, conf.int = T, conf.method="profile", exponentiate = T, effects = 'fixed')
 tmp <- tmp[,c(3, 4, 8, 9, 6, 7)]
 colnames(tmp) <- c('Predictor', 'OR', 'CI low', 'CI high', 'z', 'p')
 tmp[,c(6)] <- format.pval(tmp[,c(6)],2)
@@ -124,45 +122,54 @@ latex <- xtable(tmp, type = 'latex', digits = c(1, NaN, 2, 2, 2, 2, -2))
 print(latex, include.rownames = FALSE, file = paste0('glmm_output/',task_version, '_', model_number, 'main_glm_table.tex'))
 
 #----------------------------------------------------- EFFORT CUE (t-1) ---------------------------------------------------# 
-d.accept.rate.effHist <- d %>% filter(effortLevel == 'high') %>% group_by(subjectNumber, effortHistory) %>% summarise(acceptRate = mean(response))
 
-image <- ggplot2::ggplot(d.accept.rate.effHist, aes(x = effortHistory, y = acceptRate)) +
-  geom_path(aes(group = subjectNumber), position = pd, colour = 'grey', alpha = figure$alpha, linewidth = figure$line_width) +
-  geom_point(aes(group = subjectNumber), position = pd, shape = 21, size = figure$subj_point_size, fill = figure$colour_subj_effort, colour = 'white', stroke = 0.3) +
-  stat_summary(fun.data = "mean_se", geom = "pointrange", size = figure$mean_point_size, colour = figure$colour_effort) +
-  stat_summary(aes(y = acceptRate, group = 1), fun.y = "mean", geom = "line", colour = figure$colour_effort) +
+d.accept.rate.effHist <- d %>% group_by(subjectNumber, effortLevel, effortHistory) %>% summarise(acceptRate = mean(response))
+
+image <- ggplot2::ggplot(d.accept.rate.effHist, aes(x = effortHistory, y = acceptRate, colour = effortLevel)) +
+  geom_path(aes(group = interaction(subjectNumber, effortHistory)), position = pd, colour = "grey", linewidth = figure$line_width) +
+  geom_point(aes(group = interaction(subjectNumber, effortHistory), fill = effortLevel), position = pd, shape = 21, size = figure$subj_point_size, colour = "white", stroke = 0.3, alpha = 0.7) +
+  stat_summary(fun.data = "mean_se", geom = "pointrange", size = figure$mean_point_size, position = pd) +
+  scale_fill_manual(values = c("#B2DFDB", "#C3B1E1", "#FFD1DC")) +
+  scale_colour_manual(values = c("#00695C", "#7E57C2", "#F06292")) +
   coord_cartesian(ylim = c(0, 1.2)) +
   scale_y_continuous(breaks = seq(0, 1, 0.2)) +
   labs(x = "effort offer (t-1)", y = "pr(accept)") +
+  facet_wrap(vars(effortLevel)) +
   theme_classic() +
-  theme(
-    legend.title = element_blank(),
-    legend.position = "none",
-    text = element_text(size = figure$font_size)
-  )
+  theme(legend.title = element_blank(), legend.position = "none", text = element_text(size = figure$font_size))
+image
+
 # load and extract p-values from glm object
-load(file = paste0('glmm_output/glm_model_prev_eff_', model_number, task_version, '.RData'))
+load(file = paste0('glmm_output/glm_model_prev_', model_number, task_version, '.RData'))
 
-p_values <- summary(prev_eff_model)$coefficients$cond[c("effHist2_1", 'effHist3_2'), "Pr(>|z|)"]
-sig <- array(NA,c(5,length(p_values)))
+p_values <- summary(prev_eff_model)$coefficients$cond[c("eff_low_history", 'eff_mid_history', 'eff_high_history'), "Pr(>|z|)"]
+## Turn into printable labels (ns / < .001 / numeric)
+p_labs <- vapply(p_values, function(p) {
+  if (p < .001) { "< .001"} else if (p >= .05) { "ns." } else {as.character(round(p, 3))
+  }
+}, character(1))
 
-for (c in 1:ncol(sig)) {
-  if (p_values[c] < .001)
-  {sig[1,c] <- "< .001"
-  } else if (p_values[c] >= .05) 	{sig[1,c] <- "ns."
-  } else if (p_values[c] < .05 & p_values[c] >= .001)	{sig[1,c] <- as.character(round(p_values[c],3))}
-}
+eff_levels <- sort(unique(d.accept.rate.effHist$effortHistory))
 
-sig[2,] <- c(1.05, 1.05)
-sig[3,] <- c(1, 2.1)
-sig[4,] <- c(1.9, 3)
-sig[5,] <- c(0.0, 0.0)
+p_dat <- data.frame(
+  effortLevel = sort(unique(d.accept.rate.effHist$effortLevel)),  # facet variable
+  group1 = eff_levels[1],
+  group2 = eff_levels[length(eff_levels)],
+  p = as.numeric(p_values),
+  label = unname(p_labs),
+  y.position = 1.15
+)
 
-for (c in 1:ncol(sig)){
-  image <- image + geom_signif(annotation = sig[1,c], y_position = as.numeric(sig[2,c]),
-                               xmin = as.numeric(sig[3,c]), xmax = as.numeric(sig[4,c]),
-                               tip_length = as.numeric(sig[5,c]),
-                               colour = 'black', textsize = figure$p_label_size)}
+image <- image +
+  stat_pvalue_manual(
+    p_dat,
+    label = "label",          # column with the formatted text
+    y.position = "y.position",
+    xmin = "group1",
+    xmax = "group2",
+    bracket.size = 0.5,
+    tip.length = 0.01
+  )
 
 if (model_number != ''){
   image <- image +
@@ -170,9 +177,9 @@ if (model_number != ''){
     theme(axis.title.y=element_markdown(size = figure$font_size))
 }
 image
-ggsave(file = paste0('plots/', task_version, '/', model_number, 'accept_rate_eff_history.pdf'), plot = image, width = figure$width, height = figure$height, unit = 'cm', device = "pdf", bg = "transparent")
+ggsave(file = paste0('plots/', task_version, '/', model_number, 'accept_rate_eff_history.pdf'), plot = image, width = figure$width*3, height = figure$height, unit = 'cm', device = "pdf", bg = "transparent")
 
-tmp <- tidy(prev_eff_model, conf.int = T, exponentiate = T, effects = 'fixed')
+tmp <- tidy(prev_eff_model, conf.int = T, conf.method="profile", exponentiate = T, effects = 'fixed')
 tmp <- tmp[,c(3, 4, 8, 9, 6, 7)]
 colnames(tmp) <- c('Predictor', 'OR', 'CI low', 'CI high', 'z', 'p')
 tmp[,c(6)] <- format.pval(tmp[,c(6)],2)
@@ -181,7 +188,7 @@ latex <- xtable(tmp, type = 'latex', digits = c(1, NaN, 2, 2, 2, 2, -2))
 print(latex, include.rownames = FALSE, file = paste0('glmm_output/',task_version, '_', model_number, 'prev_eff_glm_table.tex'))
 
 # ----------------------------------- Previous effort, separated by environment ---------------------- #
-d.accept.rate.effHist <- d %>% group_by(subjectNumber, effortHistory, blockType) %>% summarise(acceptRate = mean(response))
+d.accept.rate.effHist <- d %>% filter(effortLevel == 'mid') %>% group_by(subjectNumber, effortHistory, blockType) %>% summarise(acceptRate = mean(response))
 
 # Combine blockType and effortLevel into a single factor for grouping on the x-axis
 d.accept.rate.effHist$grouping <- as.factor(interaction(d.accept.rate.effHist$blockType, d.accept.rate.effHist$effortHistory, sep = " - "))
@@ -206,7 +213,7 @@ image
 # --------------------------------------------- reward model ----------------------------------- ##
 load(file = paste0('glmm_output/glm_model_reward_', model_number, task_version, '.RData'))
 
-tmp <- tidy(reward_model, conf.int = T, exponentiate = T, effects = 'fixed')
+tmp <- tidy(reward_model, conf.int = T, conf.method="profile", exponentiate = T, effects = 'fixed')
 tmp <- tmp[,c(3, 4, 8, 9, 6, 7)]
 colnames(tmp) <- c('Predictor', 'OR', 'CI low', 'CI high', 'z', 'p')
 tmp[,c(6)] <- format.pval(tmp[,c(6)],2)
@@ -217,7 +224,7 @@ print(latex, include.rownames = FALSE, file = paste0('glmm_output/',task_version
 # --------------------------------------------- average effort model ----------------------------------- ##
 load(file = paste0('glmm_output/glm_model_avg_effort_', model_number, task_version, '.RData'))
 
-tmp <- tidy(avg_eff_model, conf.int = T, exponentiate = T, effects = 'fixed')
+tmp <- tidy(avg_eff_model, conf.int = T, conf.method="profile", exponentiate = T, effects = 'fixed')
 tmp <- tmp[,c(3, 4, 8, 9, 6, 7)]
 colnames(tmp) <- c('Predictor', 'OR', 'CI low', 'CI high', 'z', 'p')
 tmp[,c(6)] <- format.pval(tmp[,c(6)],2)
@@ -275,7 +282,7 @@ if (model_number != ''){
 image
 ggsave(file = paste0('plots/', task_version, '/', model_number,'accept_rate_exert_history.pdf'), plot = image, width = figure$width, height = figure$height, unit = 'cm', device = "pdf", bg = "transparent")
 
-tmp <- tidy(exert_eff_model, conf.int = T, exponentiate = T, effects = 'fixed')
+tmp <- tidy(exert_eff_model, conf.int = T, conf.method="profile", exponentiate = T, effects = 'fixed')
 tmp <- tmp[,c(3, 4, 8, 9, 6, 7)]
 colnames(tmp) <- c('Predictor', 'OR', 'CI low', 'CI high', 'z', 'p')
 tmp[,c(6)] <- format.pval(tmp[,c(6)],2)
@@ -379,7 +386,7 @@ ggsave(file = paste0('plots/', task_version, '/', model_number, 'avg_reward_env.
 
 # ----------------------------- Average effort rate ------------------------------#
 
-image <- ggplot(d, aes(x = averageEffortRate, y = response, colour = blockType)) + 
+image <- ggplot(d, aes(x = averageEffortRate_4, y = response, colour = blockType)) + 
   geom_smooth(method = "glm", formula = 'y~x', method.args = list('binomial')) + 
   scale_y_continuous(name = "pr(accept)", breaks = seq(0,1,0.25), limits = c(0, 1)) + 
   scale_x_continuous(name = "Background effort rate") + 
@@ -563,8 +570,8 @@ ggsave(file = paste0('plots/', task_version, '/', model_number, 'RT_eff_history_
 reward_BF_01 <- exp((BIC(reward_model) - BIC(main_model)) / 2)
 
 ##--------------------------- Model parameters ----------------------- 
-#model_params <- read.csv(paste('../data/fit/',task_version,'/fit_params_M2.csv', sep = "")) # for v1 and MRI
-model_params <- read.csv(paste('../data/fit/',task_version,'/fit_params_M4.csv', sep = "")) # for v1 and MRI
+#model_params <- read.csv(paste('../data/fit/',task_version,'/fit_params_M1.csv', sep = "")) # for v1 and MRI
+model_params <- read.csv(paste('../data/fit/',task_version,'/fit_params_M2.csv', sep = "")) # for v3
 
 d.opp.cost <- d %>% 
   filter(effortLevel == 'mid') %>%
@@ -605,6 +612,7 @@ image <- ggplot(d.accept.rate.params, aes(x = kOffer, y = opp_cost)) +
   stat_cor(method = 'pearson', p.digits = 2, size = 2, label.y = 1) + 
   theme(text = element_text(size = 8))
 image
+ggsave(file = paste0('plots/', task_version, '/', 'k_opp_cost_correlation', '.pdf'), plot = image, width = 4, height = 4, unit = 'cm', device = "pdf", bg = "transparent")
 
 # for alpha, do logarithm or spearmans since so skewed
 image <- ggplot(d.accept.rate.params, aes(x = alpha, y = opp_cost)) + 
@@ -626,6 +634,7 @@ image <- ggplot(d.accept.rate.params, aes(x = log(alpha), y = opp_cost)) +
   stat_cor(method = 'pearson', p.digits = 2, size = 2, label.y = 1) + 
   theme(text = element_text(size = 8))
 image
+ggsave(file = paste0('plots/', task_version, '/', 'alpha_opp_cost_correlation', '.pdf'), plot = image, width = 4, height = 4, unit = 'cm', device = "pdf", bg = "transparent")
 
 # softmax temperature
 image <- ggplot(d.accept.rate.params, aes(x = beta, y = opp_cost)) + 
@@ -637,6 +646,7 @@ image <- ggplot(d.accept.rate.params, aes(x = beta, y = opp_cost)) +
   stat_cor(method = 'pearson', p.digits = 2, size = 2, label.y = 1) + 
   theme(text = element_text(size = 8))
 image
+ggsave(file = paste0('plots/', task_version, '/', 'beta_opp_cost_correlation', '.pdf'), plot = image, width = 4, height = 4, unit = 'cm', device = "pdf", bg = "transparent")
 
 # weight
 # image <- ggplot(d.accept.rate.params, aes(x = weight, y = opp_cost)) + 
@@ -648,17 +658,4 @@ image
 #   stat_cor(method = 'pearson', p.digits = 2, size = 2, label.y = 1) + 
 #   theme(text = element_text(size = 8))
 # image
-
-
-# Discount parameter x weight
-# image <- ggplot(d.accept.rate.params, aes(x = kOffer, y = weight)) + 
-#   geom_point(shape = 21, fill = figure$colour_model, colour = 'white', size = 1, stroke = 0.1) + 
-#   xlab('discount: ') + ylab('weight') + 
-#   geom_smooth(method='lm', formula= y~x, colour = figure$colour_model, linewidth = 0.4) + 
-#   theme_classic() + 
-#   stat_cor(method = 'pearson', p.digits = 2, size = 2, label.y = 1) + 
-#   theme(text = element_text(size = 8))
-# image
-#ggsave(file = paste0('plots/', task_version, '/', 'k_opp_cost_correlation', '.pdf'), plot = image, width = 4, height = 4, unit = 'cm', device = "pdf", bg = "transparent")
-
 

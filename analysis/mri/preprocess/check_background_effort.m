@@ -6,8 +6,8 @@ baseDir = '/Volumes/appsmaj-effort-prey-fmri-scholey/aet_fMRI/preprocessed';
 
 subs = [1:4, 6:10, 12:31, 33:41];
 
-fileA = 'model_estimates_M2.csv';
-fileB = 'model_estimates_M13_fit_MAP_v2.csv';
+fileA = 'model_estimates_M2_fit_MAP.csv';
+fileB = 'model_estimates_M1_fit_MAP.csv';
 
 nSub  = numel(subs);
 nCols = ceil(sqrt(nSub));

@@ -17,10 +17,10 @@ addpath('./helperFunctions')
 %% ============================================================================
 
 % Which models to fit
-modelNumbers = [13];
+modelNumbers = [1:3];
 
 % Fitting options
-study_version = 'mri';  % 'v1', 'v3', or 'mri'
+study_version = 'v3';  % 'v1', 'v3', or 'mri'
 fit_flag = 1; % are we fitting?
 fit_type = 'MAP'; % MLE or MAP?
 

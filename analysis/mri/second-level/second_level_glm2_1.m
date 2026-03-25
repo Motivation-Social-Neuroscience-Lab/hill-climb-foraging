@@ -11,17 +11,16 @@ sys_path = '/Volumes/appsmaj-effort-prey-fmri-scholey/aet_fMRI/';
 
 %%% Subject IDs
 subj = [1:4, 6:10, 12:31, 33:41]; % The file (subject) numbers of the files to be used in the analysis
-%subj = [1,2,4, 7:10, 12:31, 33:38, 40:41]; % The file (subject) numbers of the files to be used in the analysis
 
 all_modulator = {'value', 'backgroundEffort', 'unsigned_effortPE'};
 n_contrast = length(all_modulator);
 
-path = [sys_path, 'first_level/z_6m_csf_wm_compcor_M13_fit_MAP/glm2_1/sub-'];
+path = [sys_path, 'first_level/z_6m_csf_wm_compcor_M1_fit_MAP/glm2_1/sub-'];
 
 for c = 1:n_contrast
 
     c
-    con_path = [sys_path,  'second_level/z_6m_csf_wm_compcor_M13_fit_MAP/glm2_1/con000',num2str(c)];
+    con_path = [sys_path,  'second_level/z_6m_csf_wm_compcor_M1_fit_MAP/glm2_1/con000',num2str(c)];
     mkdir(con_path);
     matlabbatch{1}.spm.stats.factorial_design.dir = {con_path};
     

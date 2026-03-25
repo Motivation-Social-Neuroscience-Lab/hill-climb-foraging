@@ -5,7 +5,7 @@
 clc
 clear all
 
-task_version = 'mri';
+task_version = 'v3';
 
 if strcmp(task_version, 'mri')
     cd(['~/Dropbox/average-effort/data_raw/' task_version '/behaviour/main/']) % change as required

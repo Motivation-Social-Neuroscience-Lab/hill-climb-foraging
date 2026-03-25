@@ -6,15 +6,15 @@ params = array2table(agentParams); params.Properties.VariableNames = model.param
 beta = params.beta;
 kOffer = params.kOffer;
 
-switch model.discountFunction
-    case 'weight'
-        weight = params.weight;
-end
+% switch model.discountFunction
+%     case 'weight'
+%         weight = params.weight;
+% end
 
-switch model.bias
-    case 'bias'
-        bias = params.bias;
-end
+% switch model.bias
+%     case 'bias'
+%         bias = params.bias;
+% end
 
 % set up trial counters
 trialTask = 1; % start trials in task counter
@@ -47,7 +47,7 @@ switch model.learnFunction
         %     alpha = params.alpha;
     case 'response_history'
         delay = 1;
-        bE = task.effortLevels(2);
+        bE = 0;
         bR = 0.5; % start equally likely to accept vs reject
         alpha = params.alpha;
         % case 'fixed'
@@ -88,7 +88,7 @@ while blockN <= task.nBlocks
 
     switch model.learnFunction
         case {'expected'} %{'exerted', 'reward'}
-            oppCost = (bR - bE) * delay;
+            oppCost = - bE * delay;
         case 'response_history'
             oppCost = bR;
         case 'real'
@@ -98,28 +98,36 @@ while blockN <= task.nBlocks
                 bE = task.real_bE(2);
             end
 
-            oppCost = (bR - bE) * delay;
+            oppCost = - bE * delay;
+        % case 'fixed'
+        %     if blockType(trialBlock) == 11 % easy environment
+        %         bE = params.bE_easy;
+        %     elseif blockType(trialBlock) == 99 % hard environment
+        %         bE = params.bE_hard;
+        %     end
+        % 
+        %     oppCost = - bE * delay;
 
     end
 
     % calculate subjective value
     switch model.discountFunction
-        case 'weight'
-            SV = (1-weight)*(R-kOffer*E^2) - weight*oppCost; 
-        case 'none'
-            SV = (R-kOffer*E^2) - oppCost; 
-        %     SV = R - (kOffer * E^2) + (kOffer*(bE*delay));
-        % case 'no_k'
-        %     SV = R - (kOffer * E^2) + (bE*delay);
+        % case 'weight'
+        %     SV = (1-weight)*(R-kOffer*E^2) - weight*oppCost; 
+        % case 'k'
+        %     SV = R-(kOffer*E^2) - kOffer*oppCost; 
+        %     %SV = R - (kOffer * E^2) + (kOffer*(bE*delay));
+        case 'linear'
+            SV = R - (kOffer * E^2) - oppCost;
     end
 
     % make decision
-    switch model.bias
-        case 'bias'
-            pAccept = softmaxAccept(beta, SV, 0,bias); % comparator term will be 0 if oppCost already weighting value
-        case 'none'
+    % switch model.bias
+        % case 'bias'
+        %     pAccept = softmaxAccept(beta, SV, 0,bias); % comparator term will be 0 if oppCost already weighting value
+        % case 'none'
             pAccept = softmaxAccept(beta, SV, 0,0); % comparator term will be 0 if oppCost already weighting value
-    end
+    % end
 
     if isnan(response(trialBlock)) % if simulating data
         response(trialBlock) = (rand(1) < pAccept);     % make a choice of next action
@@ -147,7 +155,7 @@ while blockN <= task.nBlocks
 
     % prediction error
     switch model.learnFunction
-        case {'expected', 'expected_tau'}
+        case {'expected'}%, 'expected_tau'}
             effortPE = E - bE;
             % case {'exerted', 'exerted_tau'}
             %
@@ -173,7 +181,7 @@ while blockN <= task.nBlocks
 
     % update background estimate
     switch model.learnFunction
-        case {'expected', 'exerted'}
+        case {'expected'}%, 'exerted'}
             bE = bE + alpha * effortPE;
             % case 'expected_tau'
             %     bE = bE + alpha * effortPE; % update at cue onset
@@ -185,7 +193,7 @@ while blockN <= task.nBlocks
             %         bE = (1 - alpha) * bE; % E = 0 for timesteps in trial
             %     end
             %     bE = bE + alpha * effortPE; % update at end of trial once effort exerted
-        case {'reward', 'response_history'}
+        case {'response_history'} %,'reward'}
             bR = bR + alpha * rewardPE;
             % case 'reward_tau'
             %     for ii = 1:tau-1

@@ -22,9 +22,7 @@ matFiles = matFiles(ix);
 
 for i = 1:length(matFiles)
 
-    modelEstimates = readtable([model_dir, matFiles(i).name(2:3), '/model_estimates_M1.csv']);
-
-    name_subj(i)
+    modelEstimates = readtable([model_dir, matFiles(i).name(2:3), '/model_estimates_M2_fit_MAP.csv']);
     % load data
     load(matFiles(i).name);
 
@@ -61,7 +59,7 @@ for i = 1:length(matFiles)
 
     names={'cue_reject' 'cue_accept' 'exert' 'feedback' 'new_block' 'break'}; % create the names for each condition
 
-    onsets=cell(1,5);
+    onsets=cell(1,length(names));
 
     pmod = struct('name',{''},'param',{},'poly',{});
 
@@ -97,37 +95,36 @@ for i = 1:length(matFiles)
         keepIdx = true(length(cueOnsets), 1); % keep all cue onset (no missed trials)
     end
 
-    onsets{1} = cueOnsets(keepIdx & modelEstimates.response == 0 & modelEstimates.effortLevel == 2); % trials where rejected and not missed
-    onsets{2} = cueOnsets(keepIdx & modelEstimates.response == 1 | modelEstimates.effortLevel ~= 2); % trials where accepted or not mid effort level and not missed
+    onsets{1} = cueOnsets(keepIdx & modelEstimates.response == 0); % trials where rejected
+    onsets{2} = cueOnsets(keepIdx & modelEstimates.response == 1); % trials where accepted
 
     %% Parametric modulators for cue - rejected
-    % pmod(1).name{1} = 'REJECT_value';
-    % pmod(1).param{1} = zscore(modelEstimates.predictedValue(keepIdx & modelEstimates.response == 0));
-    % pmod(1).poly{1}=1;
-
-    pmod(1).name{1} = 'REJECT_backgroundEffort';
-    pmod(1).param{1} = zscore(modelEstimates.backgroundEffort(keepIdx & modelEstimates.response == 0 & modelEstimates.effortLevel == 2));
-    size(pmod(1).param{1})
+    pmod(1).name{1} = 'value_reject';
+    pmod(1).param{1} = zscore(modelEstimates.predictedValue(keepIdx & modelEstimates.response == 0));
     pmod(1).poly{1}=1;
 
-    % tmp = abs(modelEstimates.effortPE);
-    % pmod(1).name{3} = 'REJECT_unsigned_effortPE';
-    % pmod(1).param{3} = zscore(tmp(keepIdx & modelEstimates.response == 0));
-    % pmod(1).poly{3}=1;
+    pmod(1).name{2} = 'backgroundEffort_reject';
+    pmod(1).param{2} = zscore(modelEstimates.backgroundEffort(keepIdx & modelEstimates.response == 0));
+    pmod(1).poly{2}=1;
+
+    tmp = abs(modelEstimates.effortPE);
+    pmod(1).name{3} = 'unsigned_effortPE_reject';
+    pmod(1).param{3} = zscore(tmp(keepIdx & modelEstimates.response == 0));
+    pmod(1).poly{3}=1;
 
     %% Parametric modulators for cue - accepted
-    % pmod(2).name{1} = 'ACCEPT_value';
-    % pmod(2).param{1} = zscore(modelEstimates.predictedValue(keepIdx & modelEstimates.response == 1));
-    % pmod(2).poly{1}=1;
-
-    pmod(2).name{1} = 'ACCEPT_backgroundEffort';
-    pmod(2).param{1} = zscore(modelEstimates.backgroundEffort(keepIdx & modelEstimates.response == 1 | modelEstimates.effortLevel ~= 2));
+    pmod(2).name{1} = 'value_accept';
+    pmod(2).param{1} = zscore(modelEstimates.predictedValue(keepIdx & modelEstimates.response == 1));
     pmod(2).poly{1}=1;
 
-    % tmp = abs(modelEstimates.effortPE);
-    % pmod(2).name{3} = 'ACCEPT_unsigned_effortPE';
-    % pmod(2).param{3} = zscore(tmp(keepIdx & modelEstimates.response == 1));
-    % pmod(2).poly{3}=1;
+    pmod(2).name{2} = 'backgroundEffort_accept';
+    pmod(2).param{2} = zscore(modelEstimates.backgroundEffort(keepIdx & modelEstimates.response == 1));
+    pmod(2).poly{2}=1;
+
+    tmp = abs(modelEstimates.effortPE);
+    pmod(2).name{3} = 'unsigned_effortPE_accept';
+    pmod(2).param{3} = zscore(tmp(keepIdx & modelEstimates.response == 1));
+    pmod(2).poly{3}=1;
     %% Parametric modulators for EXERT
 
     tmp = modelEstimates.realEffort(modelEstimates.response == 1 );
@@ -144,9 +141,9 @@ for i = 1:length(matFiles)
     pmod(4).param{1} = tmp; % note this will also include failed trials
     pmod(4).poly{1}=1;
 
-    % save_onsets_dir = '/Volumes/appsmaj-effort-prey-fmri-scholey/aet_fMRI/first_level/z_6m_csf_wm_compcor_M1/glm3_new/sub-';
-    % mkdir([save_onsets_dir,matFiles(i).name(2:3)]);
-    % 
-    % subjectFolder = [save_onsets_dir, matFiles(i).name(2:3), '/'];
-    % save(fullfile(subjectFolder, 'conditions_onsets_pmod.mat'), 'names', 'onsets', 'durations', 'orth', 'pmod');
+    save_onsets_dir = '/Volumes/appsmaj-effort-prey-fmri-scholey/aet_fMRI/first_level/z_6m_csf_wm_compcor_M2_fit_MAP/glm3/sub-';
+    mkdir([save_onsets_dir,matFiles(i).name(2:3)]);
+
+    subjectFolder = [save_onsets_dir, matFiles(i).name(2:3), '/'];
+    save(fullfile(subjectFolder, 'conditions_onsets_pmod.mat'), 'names', 'onsets', 'durations', 'orth', 'pmod');
 end

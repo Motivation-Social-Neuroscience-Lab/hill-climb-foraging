@@ -9,19 +9,20 @@ spm_jobman('initcfg')
 
 sys_path = '/Volumes/appsmaj-effort-prey-fmri-scholey/aet_fMRI/';
 
-%%% Subject IDs
-subj = [1:4, 6:10, 12:31, 33:41]; % The file (subject) numbers of the files to be used in the analysis
+%%% Subject IDs - more limited than main GLM, since not all subjects could
+%%% have design matrix estimated
+%subj = [1:4, 6:10, 12:31, 33:41]; % The file (subject) numbers of the files to be used in the analysis
 %subj = [1,2,4, 7:10, 12:31, 33:38, 40:41]; % The file (subject) numbers of the files to be used in the analysis
-
-all_modulator = {'REJECT_backgroundEffort'};
+subj = [1,4,6,8,9,10,12,13,14,19,20,21,22,23,24,25,27,28,29,31, 33, 36,37,38,40];
+all_modulator = {'REJECT_value','REJECT_background_effort','REJECT_unsigned_effortPE','ACCEPT_value','ACCEPT_background_effort','ACCEPT_unsigned_effortPE'};
 n_contrast = length(all_modulator);
 
-path = [sys_path, 'first_level/z_6m_csf_wm_compcor_M1/glm3/sub-'];
+path = [sys_path, 'first_level/z_6m_csf_wm_compcor_M2_fit_MAP/glm3/sub-'];
 
 for c = 1:n_contrast
 
     c
-    con_path = [sys_path,  'second_level/z_6m_csf_wm_compcor_M1/glm3/con000',num2str(c)];
+    con_path = [sys_path,  'second_level/z_6m_csf_wm_compcor_M2_fit_MAP/glm3/con000',num2str(c)];
     mkdir(con_path);
     matlabbatch{1}.spm.stats.factorial_design.dir = {con_path};
     

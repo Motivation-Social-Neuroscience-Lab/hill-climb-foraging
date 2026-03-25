@@ -8,12 +8,12 @@ close all
 addpath('./helperFunctions')
 
 %% user options
-save_data = 0; % flag to save data (1) or not (0)
+save_data = 1; % flag to save data (1) or not (0)
 
 % model options
-modelNum = 13; % model type - see model table to check number to choose
+modelNum = 2; % model type - see model table to check number to choose
 
-study_version = 'mri';
+study_version = 'v3';
 
 param_type = 'fit'; % which parameters to simulate {uniform, fit, median}
 nsims = 500; % number of simulated participants (doesn't apply if using 'fit' parameters)
@@ -241,7 +241,7 @@ for i = 1:modout.nsubj % if simulating more agents than subjects, just take the 
     if mod(i, 2) == 1
         ylabel('Opp Cost');
     end
-    %ylim([-0.6,0.6])
+    ylim([-1, 1])
     set(gca, 'FontSize', 12)
     grid on
 end
