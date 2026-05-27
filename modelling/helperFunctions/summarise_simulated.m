@@ -13,18 +13,38 @@ nEff = numel(config.task.effortLevels);
 nEnv = numel(config.task.env);
 
 %% Prepare for R plotting/statistics
-out = vertcat(vertcat(simdata{:}));
-% add response history (whether they accept/reject on previous trial)
-out{2:end, 'responseHistory'} = out{1:end-1, 'response'};
-out{out.trialNinBlock == 1, 'responseHistory'} = 0;
+for iSub = 1:nSubj
+    tbl = simdata{iSub};
+    if isempty(tbl), continue; end
 
-% add effort history (what effort they exerted on the previous trial)
-out{2:end, 'exertedEffortHistory'} = out{1:end-1,'realEffort'};
-out{out.trialNinBlock == 1, 'exertedEffortHistory'} = 0;
+    % assign subject number
+    tbl.subjectNumber = repmat(iSub, height(tbl), 1);
 
-% add effort history (what effort they saw on the previous trial)
-out{2:end, 'effortHistory'} = out{1:end-1,'effortLevel'};
-out{out.trialNinBlock == 1, 'effortHistory'} = 2;
+    % response history (whether they accept/reject on previous trial)
+    tbl.responseHistory = zeros(height(tbl), 1);
+    tbl{2:end, 'responseHistory'} = tbl{1:end-1, 'response'};
+    tbl{tbl.trialNinBlock == 1, 'responseHistory'} = 0;
+
+    % effort history (what effort they saw on the previous trial)
+    tbl.effortHistory = repmat(2, height(tbl), 1);
+    tbl{2:end, 'effortHistory'} = tbl{1:end-1, 'effortLevel'};
+    tbl{tbl.trialNinBlock == 1, 'effortHistory'} = 2;
+
+    % average effort history (moving window of previous 5 trials)
+    tbl.averageEffortRate_4 = repmat(2, height(tbl), 1);
+    tbl{2:end, 'averageEffortRate_4'} = movmean(tbl{1:end-1, 'effortHistory'}, [4,0]);
+    tbl{tbl.trialNinBlock == 1, 'effortHistory'} = 2;
+
+
+    % % exerted effort history (what effort they exerted on the previous trial)
+    % tbl.exertedEffortHistory = zeros(height(tbl), 1);
+    % tbl{2:end, 'exertedEffortHistory'} = tbl{1:end-1, 'realEffort'};
+    % tbl{tbl.trialNinBlock == 1, 'exertedEffortHistory'} = 0;
+
+
+    simdata{iSub} = tbl;
+end
+out = vertcat(simdata{:});
 
 %% Summarise simulated results
 acceptRate = nan(nSubj, nEff, nEnv);

@@ -1,8 +1,6 @@
 %% Hierarchical Bayesian Fitting for EPT Models
-% This script fits models using hierarchical EM algorithm instead of
-% individual fmincon optimization. This improves parameter recovery,
-% especially for bounded parameters like alpha.
-%
+% This script fits models using hierarchical EM algorithm
+
 % Meijia Li EPT
 % Date: 13/11/2025
 % updated 19/11/2025 for AET task (Emma Scholey)

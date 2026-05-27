@@ -6,15 +6,6 @@ params = array2table(agentParams); params.Properties.VariableNames = model.param
 beta = params.beta;
 kOffer = params.kOffer;
 
-% switch model.discountFunction
-%     case 'weight'
-%         weight = params.weight;
-% end
-
-% switch model.bias
-%     case 'bias'
-%         bias = params.bias;
-% end
 
 % set up trial counters
 trialTask = 1; % start trials in task counter
@@ -31,38 +22,24 @@ outcomeEffort = agent{blockN}.outcomeEffort; % this will only differ to cueEffor
 blockType = agent{blockN}.blockType; % environment type: 11 = easy, 99 = hard
 reward = agent{blockN}.reward;
 
-% initialise decision variables, we should rescale the opportunity cost:
-% the value/effort rate per timestep, multiplied by
-% time taken to accept a trial
-
+% initialise decision variables
 switch model.learnFunction
-    case {'expected', 'reward'}
+    case {'expected'}
         delay = 1;
         bE = task.effortLevels(2);
         bR = task.reward;
         alpha = params.alpha;
-        % case 'exerted'
-        %     delay = 1;
-        %     bE = task.effortLevels(1); %task.effortLevels(1); % start lower - most likely to accept lowest effort level
-        %     alpha = params.alpha;
+
     case 'response_history'
         delay = 1;
         bE = 0;
         bR = 0.5; % start equally likely to accept vs reject
         alpha = params.alpha;
-        % case 'fixed'
-        %     delay = 1;
-        %     bE = 0;
-        %     bR = 0;
+
     case 'real'
         delay = 1;
         bR = task.reward;
 
-        % case {'expected_tau','exerted_tau', 'reward_tau'}
-        %     delay = task.acceptTime;
-        %     bE = task.effortLevels(2)/delay;
-        %     bR = task.reward/delay;
-        %     alpha = params.alpha;
 end
 
 R = task.reward;
@@ -87,7 +64,7 @@ while blockN <= task.nBlocks
     % bE) and delay of accepting
 
     switch model.learnFunction
-        case {'expected'} %{'exerted', 'reward'}
+        case {'expected'} 
             oppCost = - bE * delay;
         case 'response_history'
             oppCost = bR;
@@ -99,35 +76,17 @@ while blockN <= task.nBlocks
             end
 
             oppCost = - bE * delay;
-        % case 'fixed'
-        %     if blockType(trialBlock) == 11 % easy environment
-        %         bE = params.bE_easy;
-        %     elseif blockType(trialBlock) == 99 % hard environment
-        %         bE = params.bE_hard;
-        %     end
-        % 
-        %     oppCost = - bE * delay;
 
     end
 
     % calculate subjective value
     switch model.discountFunction
-        % case 'weight'
-        %     SV = (1-weight)*(R-kOffer*E^2) - weight*oppCost; 
-        % case 'k'
-        %     SV = R-(kOffer*E^2) - kOffer*oppCost; 
-        %     %SV = R - (kOffer * E^2) + (kOffer*(bE*delay));
         case 'linear'
             SV = R - (kOffer * E^2) - oppCost;
     end
 
-    % make decision
-    % switch model.bias
-        % case 'bias'
-        %     pAccept = softmaxAccept(beta, SV, 0,bias); % comparator term will be 0 if oppCost already weighting value
-        % case 'none'
-            pAccept = softmaxAccept(beta, SV, 0,0); % comparator term will be 0 if oppCost already weighting value
-    % end
+
+    pAccept = softmaxAccept(beta, SV, 0,0); % comparator term will be 0 if oppCost already weighting value
 
     if isnan(response(trialBlock)) % if simulating data
         response(trialBlock) = (rand(1) < pAccept);     % make a choice of next action
@@ -155,23 +114,8 @@ while blockN <= task.nBlocks
 
     % prediction error
     switch model.learnFunction
-        case {'expected'}%, 'expected_tau'}
+        case 'expected'
             effortPE = E - bE;
-            % case {'exerted', 'exerted_tau'}
-            %
-            %     if response(trialBlock) == 0 % if didn't accept
-            %         effortPE = 0 - bE;
-            %     elseif response(trialBlock) == 1
-            %         effortPE = outcomeEffort(trialBlock) - bE;
-            %     end
-
-            % case {'reward', 'reward_tau'}
-            %
-            %     if response(trialBlock) == 0 % if didn't accept
-            %         rewardPE = 0 - bR;
-            %     elseif response(trialBlock) == 1
-            %         rewardPE = reward(trialBlock) - bR;
-            %     end
         case 'response_history'
             rewardPE = response(trialBlock) - bR;
     end
@@ -181,25 +125,10 @@ while blockN <= task.nBlocks
 
     % update background estimate
     switch model.learnFunction
-        case {'expected'}%, 'exerted'}
+        case 'expected'
             bE = bE + alpha * effortPE;
-            % case 'expected_tau'
-            %     bE = bE + alpha * effortPE; % update at cue onset
-            %     for ii = 1:tau-1
-            %         bE = (1 - alpha) * bE;  % E = 0 for timesteps in trial
-            %     end
-            % case 'exerted_tau'
-            %     for ii = 1:tau-1
-            %         bE = (1 - alpha) * bE; % E = 0 for timesteps in trial
-            %     end
-            %     bE = bE + alpha * effortPE; % update at end of trial once effort exerted
-        case {'response_history'} %,'reward'}
+        case {'response_history'}
             bR = bR + alpha * rewardPE;
-            % case 'reward_tau'
-            %     for ii = 1:tau-1
-            %         bR = (1 - alpha) * bR;  % R = 0 for timesteps in trial
-            %     end
-            %     bR = bR + alpha * rewardPE;
     end
 
     % time passes

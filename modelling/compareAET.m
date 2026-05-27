@@ -12,7 +12,7 @@ clearvars; close all
 
 addpath('./helperFunctions')
 
-study_version = 'mri'; % which version of data to look at (v1, v3, mri)
+study_version = 'v3'; % which version of data to look at (v1, v3, mri)
 fit_type = 'MAP';
 
 model_ids = [1:3];
@@ -48,3 +48,4 @@ fitted_models = cell2struct(fitted_models, model_ids, 2);
 %% Compare models ------------------------------------------------------------------
 fits_table = EMmc_ms(fitted_models, model_ids, config, fit_type); % function to plot comparisons based on log model evidence, BIC, and exceedance probabilities
 
+save([config.paths.data_fit, '/fits_table.mat'], 'fits_table')

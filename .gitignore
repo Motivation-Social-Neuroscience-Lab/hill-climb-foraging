@@ -1,0 +1,8 @@
+.claude
+figures/plots
+fmri/PPI/gPPI
+behavioural_analysis/questionnaires
+behavioural_analysis/data_prep.m
+figures/AET_plots.R
+behavioural_analysis/AET_mixed_models.R
+behavioural_analysis/glmm_output
