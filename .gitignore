@@ -4,7 +4,8 @@ behavioural_analysis/questionnaires
 behavioural_analysis/data_prep.m
 figures/AET_plots.R
 behavioural_analysis/AET_mixed_models.R
-behavioural_analysis/glmm_output
+behavioural_analysis/glmm_output/*.tex
+behavioural_analysis/glmm_output/*avg_exert*
 behavioural_analysis/.RData
 behavioural_analysis/.Rapp.history
 behavioural_analysis/.Rhistory
