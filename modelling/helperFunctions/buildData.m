@@ -20,12 +20,6 @@ if fit_flag == 0 % if simulating
             df{iS}{iB}.response = NaN([100,1]); % set 100 trials maximum - agent won't exceed this per block
 
             switch config.version
-                case 'online'
-                    v = results{iS}.effortLevel(results{iS}.blockNumber == iB); v = repmat(v, ceil(100/numel(v)), 1);
-                    df{iS}{iB}.cueEffort = v(1:100);
-
-                    df{iS}{iB}.outcomeEffort = df{iS}{iB}.cueEffort; % deterministic cue
-
                 case {'mri', 'v3'}
                     v = arrayfun(@(x) config.task.magnitudeToLevel(x), results{iS}.effortLevel(results{iS}.blockNumber == iB)); v = repmat(v, ceil(100/numel(v)), 1);
                     df{iS}{iB}.cueEffort = v(1:100);
@@ -43,9 +37,6 @@ if fit_flag == 0 % if simulating
 
             v = results{iS}.blockType(results{iS}.blockNumber == iB); v = repmat(v, ceil(100/numel(v)), 1);
             df{iS}{iB}.blockType = v(1:100);
-
-            % v = results{iS}.reward(results{iS}.blockNumber == iB); v = repmat(v, ceil(100/numel(v)), 1);
-            % df{iS}{iB}.reward = v(1:100);
             df{iS}{iB}.reward = generateRewardVector(config.task.credits(1), config.task.credits(2), config.task.credits(3), 100);
             
         end
@@ -61,10 +52,6 @@ elseif fit_flag == 1 % if fitting data
             df{iS}{iB}.response = results{iS}.response(results{iS}.blockNumber == iB);
             
             switch config.version
-                case 'online'
-                    df{iS}{iB}.cueEffort = results{iS}.effortLevel(results{iS}.blockNumber == iB); % already converted effort level
-                    df{iS}{iB}.outcomeEffort = results{iS}.effortLevel(results{iS}.blockNumber == iB); % already converted effort level
-
                 case {'mri', 'v3'}
                     df{iS}{iB}.cueEffort = arrayfun(@(x) config.task.magnitudeToLevel(x), results{iS}.effortLevel(results{iS}.blockNumber == iB));
                     df{iS}{iB}.outcomeEffort = arrayfun(@(x) config.task.magnitudeToLevel(x), results{iS}.effortLevel(results{iS}.blockNumber == iB)); % deterministic cue

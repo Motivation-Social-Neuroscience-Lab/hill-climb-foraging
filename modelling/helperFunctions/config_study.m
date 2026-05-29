@@ -101,35 +101,6 @@ switch study
         cfg.paths.data_fit = '../data/fit/mri/';
         cfg.paths.data_behav = '../data/behavioural/mri/';
 
-    case 'online'
-        %% Version identifier
-        cfg.version = 'online';
-        cfg.excluded_subjects = []; % participants already excluded from behav_summary
-
-        % Task parameters
-        cfg.task.env = [11 99]; % 11 = easy task, 99 = hard task
-        cfg.task.nBlocks = 4;
-        if fit_flag == 1
-            cfg.task.blockTime = 400; % block time for fitting (longer than needed), since fitting relies on actual recorded trials rather than time
-        else
-            cfg.task.blockTime = 300; % max time in block (seconds) for simulations - longer for MRI
-        end
-        cfg.task.decisionTime = 2.5; % time taken to make decision (seconds)
-        cfg.task.acceptTime = 5; % time taken to pursue prey (seconds) - shorter for MRI
-        cfg.task.rejectTime = 3; % time taken to avoid prey (seconds)
-        cfg.task.timeStep = 1; % assume updates happen at each second
-        cfg.task.magnitudes = [0.3 0.5 0.7]; % magnitudes on grip force device
-        cfg.task.effortLevels = [1 2 3]; % arbitrary level unit
-        cfg.task.reward = 2; % set the same as the mid effort level
-        cfg.task.credits = [1,1,1]; % mode, min, max, for defining distribution for simulating credit structure
-
-        cfg.task.magnitudeToLevel = containers.Map({0.2, 0.4, 0.6}, {1, 2, 3});
-
-        % File paths
-        cfg.paths.data_fit = '../data/fit/online/';
-        cfg.paths.data_behav = '../data/behavioural/online/';
-
-
 end
 
 
