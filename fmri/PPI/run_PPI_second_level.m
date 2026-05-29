@@ -16,13 +16,9 @@ subj = [1:4, 6:10, 12:31, 33:41]; % The file (subject) numbers of the files to b
 excl_subj = [3,6,39]; % movement issues
 subj = setdiff(subj,excl_subj);
 
-val_names = {
-    'sphere_dACC'
-    'sphere_L_RCZp'
-    'sphere_bilat_insula'};
+val_names = {'sphere_bilat_insula'};
 
-avg_names = {'sphere_FPm'
-    'sphere_L_pgACC'
+avg_names = {
     'sphere_R_RCZp'
     'sphere_bilat_putamen'
     };

@@ -16,11 +16,7 @@ study_version = 'v3'; % which version of data to look at (v1, v3, mri)
 fit_type = 'MAP';
 
 model_ids = [1:3];
-%model_ids = [1,2,3,6] % don't do 4 because beta goes weird
-%model_ids = [1,3,5,6,14,16:19];
-%model_ids = [1:6];
-%model_ids = [7:12];
-%model_ids = [1,2];
+
 %% Load model outputs -----------------------------------------------------
 fit_flag = 0;
 

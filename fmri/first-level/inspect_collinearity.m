@@ -2,8 +2,6 @@
 close all, clear all
 data_folder = '/Volumes/appsmaj-effort-prey-fmri-scholey/aet_fMRI/first_level/z_6m_csf_wm_compcor_M1_fit_MAP_v2/glm2_1_excl/sub-'; %where your multiple conditions .mat file is
 
-%data_folder = '/Users/exs165/Dropbox/average-effort/data_derived/mri/1st-level/glm1/sub-'; %where your multiple conditions .mat file is
-
 %%% Subject IDs
 name_subj = [1,2,4, 7:10, 12:31, 33:38, 40:41];% the names of all of your subjects that you have onsets for
 

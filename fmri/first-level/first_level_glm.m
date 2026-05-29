@@ -1,5 +1,5 @@
 %%% First level analysis design only batch script
-%%% created 6 February Emma Scholey for AET analysis
+%%% created 6 February 2026, Emma Scholey for AET analysis
 
 clear all 
 
@@ -15,8 +15,6 @@ subj = [1:4, 6:10, 12:31, 33:41]; % The file (subject) numbers of the files to b
 excl_subj = [3,6,39]; % movement issues
 subj = setdiff(subj,excl_subj);
 
-% the names of all of your subjects that you have onsets for
-
 for i = 1:numel(subj)
      cd(data_folder)
 
@@ -28,20 +26,6 @@ for i = 1:numel(subj)
     for j = 1:1795
         scanss{j} = [scan_path num2str(j)];
     end
-
-    % BUT if interpolated scans, add them here and replace accordingly
-    % all_bad_scans = readmatrix([data_folder, 'preprocessed/sub-', id, '/func/rp_sub-',id, '_interpolated_scans.txt']);
-    % 
-    % if ~isempty(all_bad_scans)
-    %     for j = 1:length(all_bad_scans)
-    %         bad_scan = all_bad_scans(j);
-    %         if bad_scan == 1795  % ignore the last scan - didn't get intepolated (only 1 subject this applies to) 
-    %             continue
-    %         else
-    %             scanss{bad_scan} = ['../../../../preprocessed/sub-', id, '/func/interpolated_smooth_sub-', id, '_task-aet_run-1_space-MNI152NLin2009cAsym_desc-preproc_bold_', num2str(bad_scan), '.nii'];
-    %         end
-    %     end
-    % end
 
     path = [data_folder, 'first_level/z_6m_csf_wm_compcor_M1_fit_MAP/glm2_1/sub-'];
 

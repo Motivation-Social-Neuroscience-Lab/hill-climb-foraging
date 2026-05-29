@@ -15,25 +15,18 @@ subj = [1:4, 6:10, 12:31, 33:41]; % The file (subject) numbers of the files to b
 excl_subj = [3,6,39]; % movement issues
 subj = setdiff(subj,excl_subj);
 
-% val_names = {
-%     'sphere_dACC'
-%     'sphere_L_RCZp'
-%     'sphere_bilat_insula'};
+val_names = {'sphere_bilat_insula'};
 
 avg_names = {
-    % 'sphere_FPm'
-    % 'sphere_L_pgACC'
-    % 'sphere_R_RCZp'
+    'sphere_R_RCZp'
     'sphere_bilat_putamen'
     };
 
 pe_names = {'sphere_R_9m'};
 
-%PPI_name = [val_names; avg_names; pe_names];
-PPI_name = [avg_names; pe_names];
+PPI_name = [val_names; avg_names; pe_names];
 
-all_mod_names = [append('backgroundEffort/', avg_names); append('effortPE/', pe_names)];
-%all_mod_names = [append('value/', val_names); append('backgroundEffort/', avg_names); append('effortPE/', pe_names)];
+all_mod_names = [append('value/', val_names); append('backgroundEffort/', avg_names); append('effortPE/', pe_names)];
 
 for m = 1:numel(all_mod_names)
 for i = 1:numel(subj)

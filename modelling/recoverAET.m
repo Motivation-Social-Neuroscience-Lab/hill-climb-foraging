@@ -8,7 +8,7 @@ clear
 close all
 
 addpath('./helperFunctions')
-addpath('../analysis/plots/plot_functions')
+addpath('../figures/functions')
 
 %% user options
 
@@ -184,8 +184,8 @@ if plot_identifiability == true
     end
 
     figure;
-    h = heatmap(xp_mat,'MissingDataColor','w', 'GridVisible', 'off', 'ColorLimits',[0,1]);
-    ylabel('Simulated')
-    xlabel('Recovered')
+    h = heatmap(xp_mat.','MissingDataColor','w', 'GridVisible', 'off', 'ColorLimits',[0,1]);
+    ylabel('Recovered')
+    xlabel('Simulated')
     colormap(brewermap([], 'Blues'));
 end
