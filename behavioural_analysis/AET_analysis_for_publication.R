@@ -4,7 +4,7 @@
 # SETUP ################ 
 rm(list = ls(all = TRUE)) # clear environment
 
-# load packages
+# load packages - install.packages("package") if not installed already
 library(tidyverse)
 library(ggsci)
 library(ggpubr)
@@ -20,7 +20,7 @@ setwd('~/Dropbox/average-effort/code/behavioural_analysis/') # adjust as require
 # select the data you want to analyse
 
 task_version = 'v3' # v1, v3 or mri
-model_number = 'M2_' #If running statistics on simulated data, include model_number + underscore (e.g. 'M6_'). If not, then leave blank ('')
+model_number = '' #If running statistics on simulated data, include model_number + underscore (e.g. 'M6_'). If not, then leave blank ('')
 
 d <- read.csv(paste('../data/behavioural/',task_version,'/cleaned_behav_summary_',model_number, task_version,'.csv', sep = ""))
 
@@ -137,25 +137,24 @@ print(models_compare)
 if (model_number== ''){ # for empirical data
   main_idx <- case_when(
     task_version == 'mri' ~ 2,
-    task_version == 'v3' ~  2, # check model 3 for non-singular term
+    task_version == 'v3' ~  3, 
     task_version == 'v1' ~ 2
   )
 } else {
   main_idx <- case_when( # for model simulated data
     task_version == 'mri' ~ 10,
-    task_version == 'v3' ~  9, # check model 3 for non-singular term
+    task_version == 'v3' ~  9, 
     task_version == 'v1' ~ 3
   )
 }
 
-#main_idx   <- auto_select_model(models_compare)
 main_model <- results[[main_idx]]
 summary(main_model)
 save(results, main_model, models_compare,
      file = paste0('glmm_output/glm_model_main_', model_number, task_version, '.RData'))
 
 
-##------------------------------ Accept rate ---------------------------------------------------
+#------------------------------ Accept rate
 d.accept.rate <- d %>% group_by(subjectNumber, blockType, effortLevel) %>% summarise(acceptRate = mean(response))
 # Combine blockType and effortLevel into a single factor for grouping on the x-axis
 d.accept.rate$grouping <- as.factor(interaction(d.accept.rate$blockType, d.accept.rate$effortLevel, sep = " - "))
@@ -335,7 +334,7 @@ if (model_number== ''){ # rest of analysis script is for empirical data only, no
   # Pick winner (override per task_version with intuition if needed)
   reward_idx <- case_when(
     task_version == 'mri' ~ 1,
-    task_version == 'v3' ~  1, # check model 7 for non-singular term
+    task_version == 'v3' ~  7, 
     task_version == 'v1' ~ 1
   )
   reward_model <- results[[reward_idx]]
