@@ -84,19 +84,20 @@ fit_model_set <- function(fixed_effects, random_effects_list, data) {
 #------------------ SUMMARY descriptives -------------
 # N trials
 tmp <- d %>% group_by(subjectNumber) %>% 
-  summarise(trials = max(trialN))
+  summarise(trials = max(trialN)) %>% 
+  summarise(mean(trials), min(trials), max(trials))
 
 # N trials and credits in each environment
 d.nAccept <- d  %>%
   group_by(subjectNumber, blockType) %>%
   summarise(acceptRate = mean(response), total_credits = sum(reward))
-t.test(d.nAccept$acceptRate[d.nAccept$blockType == 'easy'], d.nAccept$acceptRate[d.nAccept$blockType == 'hard'], paired = TRUE)
+#t.test(d.nAccept$acceptRate[d.nAccept$blockType == 'easy'], d.nAccept$acceptRate[d.nAccept$blockType == 'hard'], paired = TRUE)
 mean(d.nAccept$acceptRate[d.nAccept$blockType == 'easy'])
 mean(d.nAccept$acceptRate[d.nAccept$blockType == 'hard'])
 sd(d.nAccept$acceptRate[d.nAccept$blockType == 'easy'])
 sd(d.nAccept$acceptRate[d.nAccept$blockType == 'hard'])
 
-t.test(d.nAccept$total_credits[d.nAccept$blockType == 'easy'], d.nAccept$total_credits[d.nAccept$blockType == 'hard'], paired = TRUE)
+#t.test(d.nAccept$total_credits[d.nAccept$blockType == 'easy'], d.nAccept$total_credits[d.nAccept$blockType == 'hard'], paired = TRUE)
 mean(d.nAccept$total_credits[d.nAccept$blockType == 'easy'])
 mean(d.nAccept$total_credits[d.nAccept$blockType == 'hard'])
 sd(d.nAccept$total_credits[d.nAccept$blockType == 'easy'])

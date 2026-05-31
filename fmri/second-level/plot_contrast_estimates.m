@@ -2,7 +2,7 @@
 %%% created 16 June 2025 Emma Scholey for AET analysis
 
 clear, close all
-save_figs = 1;
+save_figs = 0;
 
 cd '../../figures/plots/mri/'
 addpath('../../functions/')
@@ -14,7 +14,7 @@ rgb = [255 164 46; % value
 
 %% ========================== if doing spheres
 
-load '/Volumes/appsmaj-effort-prey-fmri-scholey/aet_fMRI/second_level/z_6m_csf_wm_compcor_M1_fit_MAP/glm2_1_excl/contrast_estimates_6mm_sphere.mat';
+load '~/Dropbox/aet_fMRI/second_level/z_6m_csf_wm_compcor_M1_fit_MAP/glm2_1_excl/contrast_estimates_6mm_sphere.mat';
     rgb_coords = [repmat(rgb(1,:), 4, 1);
         repmat(rgb(2,:), 5, 1);
         repmat(rgb(3,:), 1, 1)];
